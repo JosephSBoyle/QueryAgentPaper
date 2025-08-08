@@ -120,29 +120,15 @@ an answer, allowing it to agglomorate the necessary information.
 \end{abstract}
 
 \section{Introduction}
-Healthcare data provides a rich source of information, yet rarely is this information leveraged to it's \textit{full potential} to improve
-patient outcomes. Whilst there has been a concerted effort to automate various \textit{extractive} medical tasks, such as clinical coding
-and radiology report generation, whose aim is to create new clinical information, few studies have investigated how to maximise the use of
-existing clinical data sources.
 
-Healthcare informatics is a discipline which broadly falls in the domain of data analytics, and involves tasks like writing SQL queries to
-retrieve cohorts of patients meeting certain criteria, typically at the request of clinical staff.
-The data is extremely heterogeneous, with diagnostic; medicinal; procedural; and anatomical data often stored in the same table.
-To compound this fact, there are often tens or hundreds of equivalent- or subtly different- ways of encoding something as common as
-diabetes\footnote{For example, a search for `diabetes' in the NIH's UMLS browser retrieves 722 distinct results.}.
-As a result, querying the data is a highly iterative and laborious process even for expert analysts, who might take anywhere from a minute to an hour to produce database query which answers a question.
+These instructions are for authors submitting papers to *ACL conferences using \LaTeX. They are not self-contained. All authors must follow the general instructions for *ACL proceedings,\footnote{\url{http://acl-org.github.io/ACLPUB/formatting.html}} and this document contains additional instructions for the \LaTeX{} style files.
 
-In this paper we describe \textbf{HealthQueryAgent} an agentic, task-oriented-dialogue (TOD) system for performing health informatics analyses,
-and demonstrate the usefulness of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by a variety of clinical and analytic staff. In our beta deployment,
-we present QueryAgent through a simple chat interface embedded in the existing web platform for patient management. The agent generates database queries and links the user to the results. The generated query is comprised of medical codes and three binary logical operators: \texttt{AND, OR, NOT}, which enables even non-technical users to understand and verify the generated logic.
+The templates include the \LaTeX{} source of this document (\texttt{acl\_latex.tex}),
+the \LaTeX{} style file used to format it (\texttt{acl.sty}),
+an ACL bibliography style (\texttt{acl\_natbib.bst}),
+an example bibliography (\texttt{custom.bib}),
+and the bibliography for the ACL Anthology (\texttt{anthology.bib}).
 
-% These instructions are for authors submitting papers to *ACL conferences using \LaTeX. They are not self-contained. All authors must follow the general instructions for *ACL proceedings,\footnote{\url{http://acl-org.github.io/ACLPUB/formatting.html}} and this document contains additional instructions for the \LaTeX{} style files.
-
-% The templates include the \LaTeX{} source of this document (\texttt{acl\_latex.tex}),
-% the \LaTeX{} style file used to format it (\texttt{acl.sty}),
-% an ACL bibliography style (\texttt{acl\_natbib.bst}),
-% an example bibliography (\texttt{custom.bib}),
-%and the bibliography for the ACL Anthology (\texttt{anthology.bib}).
 \section{Engines}
 
 To produce a PDF file, pdf\LaTeX{} is strongly recommended (over original \LaTeX{} plus dvips+ps2pdf or dvipdf).
