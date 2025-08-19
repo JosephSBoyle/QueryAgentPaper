@@ -108,12 +108,18 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Analysing healthcare data can be an arduous and error-prone task when done manually.
-In this paper we explore whether a task-oriented dialogue (TOD) agent could automate much of the data querying process,
-enabling non-technical clinicians to self-serve sophisticated analyses, whilst providing a simple mechanism using compositional
-logic via which non-experts can easily verying the query.
-HealthQueryAgent integrates with a local database of 1.5 million patients, and takes an average of 5 actions before generating
-an answer, allowing it to agglomorate the necessary information.
+% Analysing healthcare data can be an arduous and error-prone task when done manually. 
+The aim of population health analysis is for a clinician to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
+% Three examples are: listing patients who meet some criteria; calculating the rate of a condition within a subpopulation; and measuring the performance of their organisation according to some metrics.
+It is rare that clinicians themselves are able to author these database queries, meaning that they often must consult with analysts, imposing a steep cost and introducing a considerable delay. We hypothesise that an automated solution would drastically reduce both the cost and the latency to performing population health analysis, enabling clinicians to rapidly generate knowledge from clinical data.
+
+In this paper we describe a Task-Oriented Dialogue (TOD) system: \textbf{HealthQueryAgent}, which interfaces with a real-world database of 1.4 million patient records to generate clinical insight.
+% patients, and performs an average of 5 actions before generating an answer, allowing it to aggregate the necessary information.
+
+% \textbf{Transparency and interpretability} \\
+In order to take actions based on the results of analyses, it's critical that clinicians can understand the underlying logic; something which is arguably not possible with text-to-sql pipelines used in other systems in the literature. We address this by expressing queries using a simple intermediate representation (IR) consisting of three, first-order logic operations: \texttt{AND,OR,NOT} as well as the concept of a fraction. This IR is internally mapped to an SQL query and provides a simple mechanism by which a clinical user can easily understand the underlying query logic, enabling them to make decisions based on the results.
+
+
 % This document is a supplement to the general instructions for *ACL authors. It contains instructions for using the \LaTeX{} style files for ACL conferences.
 % The document itself conforms to its own specifications, and is therefore an example of what your manuscript should look like.
 % These instructions should be used both for papers submitted for review and for final versions of accepted papers.
@@ -125,16 +131,34 @@ patient outcomes. Whilst there has been a concerted effort to automate various \
 and radiology report generation, whose aim is to create new clinical information, few studies have investigated how to maximise the use of
 existing clinical data sources.
 
-Healthcare informatics is a discipline which broadly falls in the domain of data analytics, and involves tasks like writing SQL queries to
-retrieve cohorts of patients meeting certain criteria, typically at the request of clinical staff.
-The data is extremely heterogeneous, with diagnostic; medicinal; procedural; and anatomical data often stored in the same table.
-To compound this fact, there are often tens or hundreds of equivalent- or subtly different- ways of encoding something as common as
-diabetes\footnote{For example, a search for `diabetes' in the NIH's UMLS browser retrieves 722 distinct results.}.
-As a result, querying the data is a highly iterative and laborious process even for expert analysts, who might take anywhere from a minute to an hour to produce database query which answers a question.
+\begin{figure}[t]
+  \includegraphics[width=\columnwidth]{content/chat_diagram.PNG}
+  \caption{A figure with a caption that runs for more than one line.
+    Example image is usually available through the \texttt{mwe} package
+    without even mentioning it in the preamble.}
+  \label{fig:experiments}
+\end{figure}
+
+Healthcare informatics is a discipline which broadly falls in the domain of data analytics, and involves tasks like writing SQL queries to retrieve cohorts of patients meeting certain criteria, typically at the request of clinical staff.
+The data is extremely heterogeneous, with diagnostic; medicinal; procedural; and anatomical data often stored in the same tables.
+To compound this, there are often tens or hundreds of equivalent- or subtly different- ways of encoding something as common as diabetes\footnote{For example, a search for `diabetes' in the NIH's UMLS browser retrieves 722 distinct results.}.
+As a result, querying the data is a highly iterative and laborious process even for expert analysts, who might take anywhere from a minute to an hour to produce database query in response to a clinical question.
+
+In this paper we ask the following two research questions:
+
+\textbf{R01:} Can we automate the mapping from a clinical question to a database query? Formally, given a clinical user's query $Q$ and a knowledge base of medical concepts and their relations $KB$
+
+  $$ KB = (entities, relations) $$
+
+can we construct a system, $M$, which maps unseen user questions to an appropriate answer $A$?
+
+  $$ M(KB): \mathcal{Q} \rightarrow \mathcal{A} $$
+
+\textbf{R02:} Can we provide a mechanism which enables clinicians to understand the underlying query?
 
 In this paper we describe \textbf{HealthQueryAgent} an agentic, task-oriented-dialogue (TOD) system for performing health informatics analyses,
-and demonstrate the usefulness of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by a variety of clinical and analytic staff. In our beta deployment,
-we present QueryAgent through a simple chat interface embedded in the existing web platform for patient management. The agent generates database queries and links the user to the results. The generated query is comprised of medical codes and three binary logical operators: \texttt{AND, OR, NOT}, which enables even non-technical users to understand and verify the generated logic.
+and demonstrate the usefulness of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by members of both the clinical and analyst staff. In our beta deployment,
+we present QueryAgent via a chat interface embedded into an existing web platform for population health management, enabling the clinician to collaborate with the agent to refine the analysis. The generated query is comprised of medical concepts and three binary logical operators: \texttt{AND, OR, NOT}, which enables even non-technical users to understand and verify the generated logic.
 
 % These instructions are for authors submitting papers to *ACL conferences using \LaTeX. They are not self-contained. All authors must follow the general instructions for *ACL proceedings,\footnote{\url{http://acl-org.github.io/ACLPUB/formatting.html}} and this document contains additional instructions for the \LaTeX{} style files.
 
