@@ -117,7 +117,7 @@ In this paper we describe a Task-Oriented Dialogue (TOD) system: \textbf{HealthQ
 % patients, and performs an average of 5 actions before generating an answer, allowing it to aggregate the necessary information.
 
 % \textbf{Transparency and interpretability} \\
-In order to take actions based on the results of analyses, it's critical that clinicians can understand the underlying logic; something which is arguably not possible with text-to-sql pipelines used in other systems in the literature. We address this by expressing queries using a simple intermediate representation (IR) consisting of three, first-order logic operations: \texttt{AND,OR,NOT} as well as the concept of a fraction. This IR is internally mapped to an SQL query and provides a simple mechanism by which a clinical user can easily understand the underlying query logic, enabling them to make decisions based on the results.
+In order to take actions based on the results of analyses, it's critical that clinicians can understand the underlying logic; something which is arguably not possible with text-to-sql pipelines used in other systems in the literature. We address this by expressing queries using a simple intermediate representation (IR) consisting of three first-order logic operations: \texttt{AND,OR,NOT} as well as the concept of a fraction. This IR is internally mapped to an SQL query and provides a simple mechanism by which a clinical user can easily understand the underlying query logic, enabling them to make decisions based on the results.
 
 
 % This document is a supplement to the general instructions for *ACL authors. It contains instructions for using the \LaTeX{} style files for ACL conferences.
@@ -142,23 +142,25 @@ existing clinical data sources.
 Healthcare informatics is a discipline which broadly falls in the domain of data analytics, and involves tasks like writing SQL queries to retrieve cohorts of patients meeting certain criteria, typically at the request of clinical staff.
 The data is extremely heterogeneous, with diagnostic; medicinal; procedural; and anatomical data often stored in the same tables.
 To compound this, there are often tens or hundreds of equivalent- or subtly different- ways of encoding something as common as diabetes\footnote{For example, a search for `diabetes' in the NIH's UMLS browser retrieves 722 distinct results.}.
-As a result, querying the data is a highly iterative and laborious process even for expert analysts, who might take anywhere from a minute to an hour to produce database query in response to a clinical question.
+As a result, querying the data is an iterative and labour-intensive process even for analysts, who might take anywhere from a minute to an hour to aggregate the medical codes expressing a particular medical concept, and to express the logic of the query in a query language like SQL. Previous studies have investigated the capacity of generative language models to provide a bridge between natural language queries and database ones in the population health domain.
 
 In this paper we ask the following two research questions:
 
-\textbf{R01:} Can we automate the mapping from a clinical question to a database query? Formally, given a clinical user's query $Q$ and a knowledge base of medical concepts and their relations $KB$
+\textbf{R01:} Can we automate the mapping from a clinical question to a database query? Formally, given a clinical user's question $Q$ and a database of medical concepts and their occurrences $DB$,
 
-  $$ KB = (entities, relations) $$
+  $$ DB = (entities, relations) $$
 
 can we construct a system, $M$, which maps unseen user questions to an appropriate answer $A$?
 
-  $$ M(KB): \mathcal{Q} \rightarrow \mathcal{A} $$
+  $$ M(DB): \mathcal{Q} \rightarrow \mathcal{A} $$
 
-\textbf{R02:} Can we provide a mechanism which enables clinicians to understand the underlying query?
+\textbf{RO2:} Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?
 
-In this paper we describe \textbf{HealthQueryAgent} an agentic, task-oriented-dialogue (TOD) system for performing health informatics analyses,
-and demonstrate the usefulness of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by members of both the clinical and analyst staff. In our beta deployment,
-we present QueryAgent via a chat interface embedded into an existing web platform for population health management, enabling the clinician to collaborate with the agent to refine the analysis. The generated query is comprised of medical concepts and three binary logical operators: \texttt{AND, OR, NOT}, which enables even non-technical users to understand and verify the generated logic.
+\textbf{R03:} Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
+
+We describe \textbf{HealthQueryAgent}, an agentic, task-oriented-dialogue (TOD) system for generating interpretable medical database queries using generative language models. We demonstrate the utility of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by members of both the clinical and analyst staff.
+In our beta deployment, we present HealthQueryAgent via a chat interface embedded into an existing web platform for population health management, enabling the clinician to collaborate with the agent to refine the analysis.
+The generated query is comprised of medical concepts and three binary logical operators: \texttt{AND, OR, NOT}, which enables non-programmer users to understand and verify the generated logic.
 
 % These instructions are for authors submitting papers to *ACL conferences using \LaTeX. They are not self-contained. All authors must follow the general instructions for *ACL proceedings,\footnote{\url{http://acl-org.github.io/ACLPUB/formatting.html}} and this document contains additional instructions for the \LaTeX{} style files.
 
