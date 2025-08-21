@@ -108,28 +108,20 @@
 \begin{document}
 \maketitle
 \begin{abstract}
+
+% What does this paper add
+In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) system which provides a natural language interface to a real-world database of 1.4 million patient records. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks from a single user utterance. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD).
+
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
 The aim of population health analysis is for a clinician to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
 % Three examples are: listing patients who meet some criteria; calculating the rate of a condition within a subpopulation; and measuring the performance of their organisation according to some metrics.
-It is rare that clinicians themselves are able to author these database queries, meaning that they often must consult with analysts, imposing a steep cost and introducing a considerable delay. We hypothesise that an automated solution would drastically reduce both the cost and the latency to performing population health analysis, enabling clinicians to rapidly generate knowledge from clinical data.
-
-In this paper we describe a Task-Oriented Dialogue (TOD) system: \textbf{HealthQueryAgent}, which interfaces with a real-world database of 1.4 million patient records to generate clinical insight.
-% patients, and performs an average of 5 actions before generating an answer, allowing it to aggregate the necessary information.
-
-% \textbf{Transparency and interpretability} \\
-In order to take actions based on the results of analyses, it's critical that clinicians can understand the underlying logic; something which is arguably not possible with text-to-sql pipelines used in other systems in the literature. We address this by expressing queries using a simple intermediate representation (IR) consisting of three first-order logic operations: \texttt{AND,OR,NOT} as well as the concept of a fraction. This IR is internally mapped to an SQL query and provides a simple mechanism by which a clinical user can easily understand the underlying query logic, enabling them to make decisions based on the results.
-
+It is rare that clinicians themselves are able to author these database queries, meaning that they often must consult with analysts, imposing a steep cost and introducing a considerable delay. We hypothesise that an automated solution would drastically reduce both the cost and the latency to performing population health analysis, enabling clinicians to rapidly generate actionable knowledge from clinical data.
 
 % This document is a supplement to the general instructions for *ACL authors. It contains instructions for using the \LaTeX{} style files for ACL conferences.
 % The document itself conforms to its own specifications, and is therefore an example of what your manuscript should look like.
 % These instructions should be used both for papers submitted for review and for final versions of accepted papers.
 \end{abstract}
 
-\section{Introduction}
-Healthcare data provides a rich source of information, yet rarely is this information leveraged to it's \textit{full potential} to improve
-patient outcomes. Whilst there has been a concerted effort to automate various \textit{extractive} medical tasks, such as clinical coding
-and radiology report generation, whose aim is to create new clinical information, few studies have investigated how to maximise the use of
-existing clinical data sources.
 
 \begin{figure}[t]
   \includegraphics[width=\columnwidth]{content/chat_diagram.PNG}
@@ -139,10 +131,32 @@ existing clinical data sources.
   \label{fig:experiments}
 \end{figure}
 
-Healthcare informatics is a discipline which broadly falls in the domain of data analytics, and involves tasks like writing SQL queries to retrieve cohorts of patients meeting certain criteria, typically at the request of clinical staff.
-The data is extremely heterogeneous, with diagnostic; medicinal; procedural; and anatomical data often stored in the same tables.
-To compound this, there are often tens or hundreds of equivalent- or subtly different- ways of encoding something as common as diabetes\footnote{For example, a search for `diabetes' in the NIH's UMLS browser retrieves 722 distinct results.}.
-As a result, querying the data is an iterative and labour-intensive process even for analysts, who might take anywhere from a minute to an hour to aggregate the medical codes expressing a particular medical concept, and to express the logic of the query in a query language like SQL. Previous studies have investigated the capacity of generative language models to provide a bridge between natural language queries and database ones in the population health domain.
+
+\section{Introduction}
+
+% focus has been elsewhere
+Healthcare organisations collect vast quantities of healthcare data, however at present it would be difficult to argue that this data is used to it's \textit{full potential}. Whilst there has been a concerted effort from the machine learning researchers to automate various \textit{extractive} medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise the use of existing clinical data sources through generating automating the data analytics process.
+
+
+% Informatics
+Healthcare informatics is an interdisciplinary field at the intersection of data analytics and medicine, and entails improving the health outcomes through the broad use of clinical data. Informatics tasks include: writing database queries to select cohorts of patients meeting certain criteria, measuring the performance of interventions, and developing tools for clinicians to better access data. 
+
+% EHR
+The data used in healthcare informatics is stored in electronic healthcare records (EHR). Personal EHR are a rich store of information, often containing thousands of recorded medical codes dating back to a persons's birth. These records are used to great effect in large health organisations such as the NHS, where this data enables clinicians to proactively identify people's needs and to provide targeted interventions, through the use of digital clinical decision support systems (CDSS).
+
+
+% Recent developments in data 
+The quality of the recorded data has improved dramatically due to various incentive structures put in place, such as the mandate that providers and hospitals in the United States must exhibit `meaningful use' of the EHR in order to be eligible for Medicare and Medicaid funding, which has been fully in effect since 2016\footnote{https://www.healthit.gov/faq/what-meaningful-use}. In the UK similar incentives for good medical coding exist, with additional funds allocated to reimburse organisations which handle more complex cases- provided they are coded properly.
+
+% todo graphic of the EHR?
+
+% Epidemiology
+The ability of public health institutions to identify and respond to emergencies depends on their ability to aggregate and interpret information about the situation on the ground. Whilst digital records simplify the aggregation of said information, creating the correct database queries to analyse the data often requires the assistance of programmers, as CDSS tools typically provide limited analysis capabilities.
+
+
+% In 1854 when John Snow identified the fatal Cholera outbreak as being centered around polluted water wells, he collected data by personally enquiring as to  manually mapped a graph of those
+
+% TODO diagram of cohort selection (it's just a 2D space!) -- ref. the 3B1B video on Bayes' theorem.
 
 In this paper we ask the following two research questions:
 
@@ -160,7 +174,29 @@ can we construct a system, $M$, which maps unseen user questions to an appropria
 
 We describe \textbf{HealthQueryAgent}, an agentic, task-oriented-dialogue (TOD) system for generating interpretable medical database queries using generative language models. We demonstrate the utility of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by members of both the clinical and analyst staff.
 In our beta deployment, we present HealthQueryAgent via a chat interface embedded into an existing web platform for population health management, enabling the clinician to collaborate with the agent to refine the analysis.
-The generated query is comprised of medical concepts and three binary logical operators: \texttt{AND, OR, NOT}, which enables non-programmer users to understand and verify the generated logic.
+
+% Interpretability
+For the results of an automated querying system to be actionable, they must first be interpretable. Specifically, generated database queries must be understandable to the user; whilst SQL is ubiquitous amongst analysts, clinicians will struggle to verify that an SQL query is correctly expressing their intent. To work around this limitation, we limit cohort selection queries (the predominant type of query) to a subset which can be expressed using a composition of only three logical operations: \texttt{AND, OR, AND NOT}. For clinician facing CDSS the tradeoff of expressivity for interpretability could be worthwile compared to text-to-SQL based systems, whose queries cannot be easily verified by non-programmers.
+
+% is that our system generates queries in an interpretable intermediate representation (IR). In order to make decisions based on the results of the generated query, it is critical that the query itself can be checked logically by the user.In the case of an analyst generating SQL is appropriate, however non-programmers will have difficulty validating the correctness of SQL queries. 
+
+ %clinicians can understand the underlying logic; something which is arguably not possible with text-to-sql pipelines used in other systems in the literature. We address this by expressing queries using a simple intermediate representation (IR) consisting of three first-order logic operations: \texttt{AND,OR,NOT} as well as the concept of a fraction. This IR is programmatically mapped to an SQL query and provides a simple mechanism for non-programmers to ensure that the query is logically correct- a key requirement for actionable analyses.
+
+% Local context
+In the context of the UK, where this study takes place, our health service has announced three major shifts in it's operations\footnote{https://www.england.nhs.uk/digitaltechnology/the-single-patient-record/}:
+
+\begin{enumerate}
+	\item hospital to community
+	\item sickness to prevention
+	\item analogue to digital
+\end{enumerate}
+
+HealthQueryAgent fits squarely within these aims. By enabling primary (community) care physicians to proactively pin-point people who need assistance, the burden can be shifted away from expensive secondary care services (hospitals / inpatient facilities).
+
+
+% SEMANTIC PARSING
+
+% TEXT TO SQL (ziletti 2024,2025)
 
 % These instructions are for authors submitting papers to *ACL conferences using \LaTeX. They are not self-contained. All authors must follow the general instructions for *ACL proceedings,\footnote{\url{http://acl-org.github.io/ACLPUB/formatting.html}} and this document contains additional instructions for the \LaTeX{} style files.
 
