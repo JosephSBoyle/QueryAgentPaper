@@ -135,30 +135,11 @@ It is rare that clinicians themselves are able to author these database queries,
 \section{Introduction}
 
 % focus has been elsewhere
-Healthcare organisations collect vast quantities of healthcare data, however at present it would be difficult to argue that this data is used to it's \textit{full potential}. Whilst there has been a concerted effort from the machine learning researchers to automate various \textit{extractive} medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise the use of existing clinical data sources through generating automating the data analytics process.
+Healthcare organisations collect vast quantities of healthcare data, however at present it would be difficult to argue that this data is used to it's \textit{full potential}. Whilst there has been a concerted effort from machine learning researchers to automate various \textit{extractive} medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise the use of existing clinical data sources through automating the data analytics process.
 
-
-% Informatics
-Healthcare informatics is an interdisciplinary field at the intersection of data analytics and medicine, and entails improving the health outcomes through the broad use of clinical data. Informatics tasks include: writing database queries to select cohorts of patients meeting certain criteria, measuring the performance of interventions, and developing tools for clinicians to better access data. 
-
-% EHR
-The data used in healthcare informatics is stored in electronic healthcare records (EHR). Personal EHR are a rich store of information, often containing thousands of recorded medical codes dating back to a persons's birth. These records are used to great effect in large health organisations such as the NHS, where this data enables clinicians to proactively identify people's needs and to provide targeted interventions, through the use of digital clinical decision support systems (CDSS).
-
-
-% Recent developments in data 
-The quality of the recorded data has improved dramatically due to various incentive structures put in place, such as the mandate that providers and hospitals in the United States must exhibit `meaningful use' of the EHR in order to be eligible for Medicare and Medicaid funding, which has been fully in effect since 2016\footnote{https://www.healthit.gov/faq/what-meaningful-use}. In the UK similar incentives for good medical coding exist, with additional funds allocated to reimburse organisations which handle more complex cases- provided they are coded properly.
-
-% todo graphic of the EHR?
-
-% Epidemiology
-The ability of public health institutions to identify and respond to emergencies depends on their ability to aggregate and interpret information about the situation on the ground. Whilst digital records simplify the aggregation of said information, creating the correct database queries to analyse the data often requires the assistance of programmers, as CDSS tools typically provide limited analysis capabilities.
-
-
-% In 1854 when John Snow identified the fatal Cholera outbreak as being centered around polluted water wells, he collected data by personally enquiring as to  manually mapped a graph of those
-
-% TODO diagram of cohort selection (it's just a 2D space!) -- ref. the 3B1B video on Bayes' theorem.
-
-In this paper we ask the following two research questions:
+% Formulation
+\subsection{Task}
+This paper tackles the challenge of automating health informatics queries. This is a complex challenge as it encompasses a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query which best operationalises the user's intent. We ask the following three research questions:
 
 \textbf{R01:} Can we automate the mapping from a clinical question to a database query? Formally, given a clinical user's question $Q$ and a database of medical concepts and their occurrences $DB$,
 
@@ -171,6 +152,28 @@ can we construct a system, $M$, which maps unseen user questions to an appropria
 \textbf{RO2:} Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?
 
 \textbf{R03:} Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
+
+
+
+% Informatics
+Healthcare informatics is an interdisciplinary field at the intersection of data analytics and medicine, and entails improving the health outcomes through the broad use of clinical data. Informatics tasks include: writing database queries to select cohorts of patients meeting certain criteria, measuring the performance of interventions, and developing tools for clinicians to better access data. 
+
+% EHR
+The data used in healthcare informatics is stored in electronic healthcare records (EHR). Personal EHR are a rich store of information, often containing thousands of recorded medical codes dating back to a persons's birth. These records are used to great effect in large health organisations such as the NHS, where this data enables clinicians to proactively identify people's needs and to provide targeted interventions, through the use of digital clinical decision support systems (CDSS).
+
+
+% Recent developments in data 
+The quality of the recorded data has improved dramatically due to various incentive structures put in place, such as the mandate that providers and hospitals in the United States must exhibit `meaningful use' of the EHR in order to be eligible for Medicare and Medicaid funding, which has been fully in effect since 2016\footnote{https://www.healthit.gov/faq/what-meaningful-use}. In the UK similar incentives for good medical coding exist, with additional funds allocated to reimburse organisations which handle more complex cases, conditional on the diagnoses and procedures being properly coded.
+
+% todo graphic of the EHR?
+
+% Epidemiology
+The ability of public health institutions to identify and respond to emergencies depends on their ability to aggregate and interpret information about the situation on the ground. Whilst digital records simplify the aggregation of said information, creating the correct database queries to analyse the data often requires the assistance of programmers, as CDSS tools typically provide limited analysis capabilities.
+
+
+% In 1854 when John Snow identified the fatal Cholera outbreak as being centered around polluted water wells, he collected data by personally enquiring as to  manually mapped a graph of those
+
+% TODO diagram of cohort selection (it's just a 2D space!) -- ref. the 3B1B video on Bayes' theorem.
 
 We describe \textbf{HealthQueryAgent}, an agentic, task-oriented-dialogue (TOD) system for generating interpretable medical database queries using generative language models. We demonstrate the utility of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by members of both the clinical and analyst staff.
 In our beta deployment, we present HealthQueryAgent via a chat interface embedded into an existing web platform for population health management, enabling the clinician to collaborate with the agent to refine the analysis.
