@@ -109,13 +109,13 @@
 \maketitle
 \begin{abstract}
 
-% What does this paper add
-In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) system which provides a natural language interface to a real-world database of 1.4 million patient records. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks from a single user utterance. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD).
-
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
 The aim of population health analysis is for a clinician to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
 % Three examples are: listing patients who meet some criteria; calculating the rate of a condition within a subpopulation; and measuring the performance of their organisation according to some metrics.
-It is rare that clinicians themselves are able to author these database queries, meaning that they often must consult with analysts, imposing a steep cost and introducing a considerable delay. We hypothesise that an automated solution would drastically reduce both the cost and the latency to performing population health analysis, enabling clinicians to rapidly generate actionable knowledge from clinical data.
+Specialist analysts are needed to translate clinical queries into database ones, imposing a steep cost and introducing a considerable delay. We hypothesise a system for automatically performing this translation in an interpretable fashion could drastically reduce both the cost and the latency to performing population health analysis, and enable clinicians to rapidly generate actionable knowledge from clinical data.
+
+% What does this paper add
+In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) system which provides a natural language interface to a real-world database of 1.4 million patient records. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks from a single user utterance. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD).
 
 % This document is a supplement to the general instructions for *ACL authors. It contains instructions for using the \LaTeX{} style files for ACL conferences.
 % The document itself conforms to its own specifications, and is therefore an example of what your manuscript should look like.
@@ -200,6 +200,14 @@ HealthQueryAgent fits squarely within these aims. By enabling primary (community
 % SEMANTIC PARSING
 
 % TEXT TO SQL (ziletti 2024,2025)
+
+
+\begin{figure*}[t]
+  \includegraphics[width=\linewidth]{content/system_diagram2.png}
+	\label{system-diagram}
+	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. The agent is designed so as to make it impossible for it to view the patient information itself. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify it's results or asking follow up questions.}
+\end{figure*}
+
 
 % These instructions are for authors submitting papers to *ACL conferences using \LaTeX. They are not self-contained. All authors must follow the general instructions for *ACL proceedings,\footnote{\url{http://acl-org.github.io/ACLPUB/formatting.html}} and this document contains additional instructions for the \LaTeX{} style files.
 
