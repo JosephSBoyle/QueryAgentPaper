@@ -31,6 +31,10 @@
 %additional package(s)
 \usepackage{graphicx}
 
+% custom packages: %
+\usepackage{xcolor}
+%%%%%%%%%%%%%%%%%%%%
+
 % If the title and author information does not fit in the area allocated, uncomment the following
 %
 %\setlength\titlebox{<dim>}
@@ -109,7 +113,7 @@
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying data from over 1.4M patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks from a single user utterance. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD).
+In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying data from over 1.4M patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
 
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
 The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
@@ -202,8 +206,8 @@ Semantic Parsing is the task of parsing a user's utterance into a logical statem
 
 \begin{figure*}[t]
   \includegraphics[width=\linewidth]{content/system_diagram3.png}
-	\label{system-diagram}
 	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify it's results or asking follow up questions.}
+	\label{fig:system-diagram}
 \end{figure*}
 
 \section{Related Work}
@@ -235,8 +239,110 @@ Text-to-SQL is the task of operationalising a question by mapping it to a Struct
 Medical applications of text-to-SQL have largely focussed on translating natural language queries into database ones directly as part of health analyst workflows \citet{ziletti_retrieval_2024}.
 
 \section{Method}
+% A method is like a recipe.
+In this section we describe the HealthQueryAgent system and development process.
+
+% \subsection{Automated testing} ...
+
+\subsection{Workflows}
+...
+
+\subsection{Tools}
+The agent has a fixed set of tools provided in the industry standard json tools format.
+The tools contain brief descriptions of their function, and are mapped 1:1 with Python functions internally, using a switch-case statement.
+
+\subsubsection{Return}
+The agent may return a result in the form of a URL link showing the user the result of the generated query, as well as the query itself.
+The output modes include
+
+\begin{table}[t]
+\centering
+\begin{tabular}{|p{2cm}|p{5cm}|}
+\hline
+	Output mode & Sample requests \\
+\hline
+\hline
+	Patient List	& show me the \textcolor{blue}{dementia status} for people with moderate or severe frailty; \\
+			& Hip fracture; \\ 
+\hline
+	Cohort Statistics 	& How many patients are on \textcolor{red}{PERT}? \\
+				& What's the rate of ADHD in people with Autism? \\
+				& Show me the distribution of \textcolor{teal}{ages} for \textcolor{orange}{dementia patients.} \\
+\hline
+	KPIs 	& How's \textcolor{brown}{Saxon Cross} doing on admissions avoidance? \\
+		& Is Nottingham West doing better than East on diabetes management? \\	
+\hline
+\end{tabular}
+	\label{tab:sample-queries}
+\end{table}
+
+
+
+\subsubsection{Search}
+To enable the agent to access the relevant contents of various tables, we provide it with a search tool.
+The tool takes two arguments: a key, which is used for a simple substring match, and a mode, which is used to determine the type of entity being searched
+for.
+
+\begin{table}[t]
+\centering
+	\begin{tabular}{|p{2cm}|p{5cm}|}
+\hline
+	Entity Type & Sample entities \\
+
+\hline
+\hline
+	Concepts 	& \textcolor{orange}{Dementia} \\
+			& \textcolor{red}{Pancreatic Enzyme Replacement Therapy} \\
+			& Diabetes - L12M \\
+			& 2+ hospital admissions L12M \\
+			& Hip fracture \\ 
+\hline
+	Locations	& \textcolor{brown}{Saxon Cross General Practice;}\\	
+			& Nottingham West; \\
+			& Orchard Surgery; \\
+\hline
+	KPIs		& \% of diabetics whose HBa1c is 48mmol/mol or lower; \\
+	 		& \% of medication reviews for those on the end of life register; \\	
+\hline
+	Reports		& \textcolor{blue}{Dementia:} \\
+			& Age | Sex | MoCA score | \\
+			& Frailty: \\
+			& Age | Sex | Barthel independence score | clinical frailty score | history of falls \\
+\hline
+	Statistics	& \textcolor{teal}{Age bands} \\
+			& Diagnoses \\
+			& Admissions \\
+\hline
+\end{tabular}
+
+\caption{
+	A sample of entities which HealthQueryAgent needs to marshal in order to generate it's answer queries.
+	`L12m' refers to data recorded in the the last 12 months.
+	`HBa1c' is a blood sugar test used to measure the performance of diabetes treatments, the specific value corresponds to the clinical threshold for `well-controlled'.
+%	\textbf{Takeaway}: the agent must retrieve local data to complete it's task.
+}
+	\label{tab:sample-entities}
+\end{table}
+
+
+\subsection{Privacy preserving design}
+Personal health information cannot be processed by third-party APIs.
+To ensure that no personal data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any derivates thereof; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions, as shown in Figure \ref{fig:system-diagram}.
+
 
 \section{Experimental Setup}
+% What experiments did you run to test your hypotheses, and why?
+To test the capabilities of our agent, we use a selection of 100 real-world dialogues and judge the agent's performance in them compared to an expert analyst.
+
+We grade each agent according to the following two measures: \textbf{parsing}: does the expert analyst agree with the agent's interpretation of the user intent? \textbf{accuracy}: did the agent select the same segment of patients as the expert analyst?
+
+\section{Results}
+% (descriptive) What did our experiments show?
+
+
+\section{Conclusion}
+% What did we take away from these results?
+
 
 \begin{table}[t]
 \centering
@@ -254,7 +360,6 @@ Medical applications of text-to-SQL have largely focussed on translating natural
 \end{table}
 
 
-\section{Results}
 
 \section*{Limitations}
 
@@ -299,13 +404,14 @@ In cases where the user intent is unclear, semantic parsing issues become more f
 
 
 \section*{Acknowledgments}
+We thank the NHS Nottingham Data Management Team for their expertise and contributions to this project. Specifically we thank Anthony Dranfield and Ben Clarke for their assistance with the eHealthScope platform and database, and Carl Davis for organising the relevant equiptment.
 
 \bibliography{references}
 
 \appendix
 
-\section{Example Appendix}
-\label{sec:appendix}
+% \section{Example Appendix}
+% \label{sec:appendix}
+% This is an appendix.
 
-This is an appendix.
 \end{document}
