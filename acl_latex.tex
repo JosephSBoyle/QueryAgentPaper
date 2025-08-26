@@ -109,11 +109,11 @@
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) system which provides a natural language interface to a real-world database of 1.4 million patient records. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks from a single user utterance. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD).
-
+In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying data from over 1.4M patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks from a single user utterance. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD).
+	\citet{jiang_medagentbench_2025}
 
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
-The aim of population health analysis is for a clinician to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
+The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
 % Three examples are: listing patients who meet some criteria; calculating the rate of a condition within a subpopulation; and measuring the performance of their organisation according to some metrics.
 Specialist analysts are needed to translate clinical queries into database ones, imposing a steep cost and introducing a considerable delay. We hypothesise a system for automatically performing this translation in an interpretable fashion could drastically reduce both the cost and the latency to performing population health analysis, and enable clinicians to rapidly generate actionable knowledge from clinical data.
 
@@ -223,7 +223,7 @@ In 2025, the most commonly used TOD agents are coding ones such as Claude Code, 
 \subsection{Text-to-SQL}
 Text-to-SQL is the task of operationalising a question by mapping it to a Structured Query Language (SQL) script.
 
-Medical applications of text-to-SQL have largely focussed on translating natural language queries into database ones directly as part of health analyst workflows \citet{ziletti 2024}.
+Medical applications of text-to-SQL have largely focussed on translating natural language queries into database ones directly as part of health analyst workflows \citet{ziletti_retrieval_2024}.
 
 \section{Method}
 
