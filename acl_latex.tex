@@ -110,7 +110,6 @@
 \begin{abstract}
 % What does this paper add
 In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying data from over 1.4M patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks from a single user utterance. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD).
-	\citet{jiang_medagentbench_2025}
 
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
 The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
@@ -209,14 +208,24 @@ Semantic Parsing is the task of parsing a user's utterance into a logical statem
 
 \section{Related Work}
 
-\subsection{Agents and Task-Oriented Dialogue}
-Task-oriented Dialogue (TOD) systems are those in which an agent converses with a user to perform some task.
-Since the release of ChatGPT in late 2022, \cite{}, task-oriented dialogue systems have exploded in popularity.
+Our proposed agent-based, task-oriented dialogue system for medical database querying sits at the intersection of three strands of research: Task-Oriented Dialogue, agent-based information retrieval, and text-to-SQL.
 
+\subsection{Task-Oriented Dialogue}
+% todo: make more relevant to our work.
+Task-Oriented Dialogue (TOD) systems are those in which an agent converses with a user to perform a task, such as booking a flight. This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task. Semantic parsing: creating a logical interpretation of the user's utterance in the specific context, is a core component of TOD systems.
+
+Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility such as dialogue state-tracking or natural language generation.
+As pointed out in \citet{yi_a_survery_2024}, the propogation of errors between modules hampers the performance of these systems, and they have largely fallen by the wayside in favour of systems which utilize a single sequence-to-sequence model to perform the entire task. Examples of the latter include \citet{wen_network-based_2017}, who developed a novel NN architecture, and \citet{xu_rethinking_2024}, who created a framework for applying existing LLMs.
+
+% Two key challenges in TOD maintaining coherence over long multi-turn conversations (\citet{laban_llms_2025}), as well as identifying when f under-specified questions\cite{gan_clarq-llm_2024}
 
 \subsection{LLM Agents}
-LLM agents are generally instruction-tuned models which are augmented with tools (functions) which enable the agent to take actions, e.g. by retrieving information.
-The addition of retrieval abilities enables these language models to obtain local knowledge required to perform many economically valuable tasks, such as reading a database schema in order to create a statement using the correct combination of tables and columns \cite{ReAct}.
+LLM agents (agents) refer to instruction-tuned models which are augmented with tools (functions) which enable them to take actions within an environment e.g. retrieving information from Wikipedia in order to obtain an answer \cite{yao_reac_2023}. Importantly, agents have the ability to determine their course of action dynamically as opposed to performing tasks in a predefined sequence or pipeline. This change allows agents to dynamically interact with the environment and to change course as they progress and receive new information from the environment.
+
+% sole task is to retreive information, a paradigm described as `agentic information retrieval' by \citet{zhang_agentic_2025}.
+
+The ability to observe and correct mistakes means that agents are able to outperform LLMs in complex tasks like programming.
+Language models to obtain local knowledge required to perform many economically valuable tasks, such as reading a database schema in order to create a statement using the correct combination of tables and columns 
 In 2025, the most commonly used TOD agents are coding ones such as Claude Code, which are able to autonomously perform relatively long-horizon programming tasks issued via a command-line interface, adapting to the user's requests over multiple conversational turns\cite{METR}.
 
 
