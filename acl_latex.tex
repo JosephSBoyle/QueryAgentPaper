@@ -138,23 +138,52 @@ Specialist analysts are needed to translate clinical queries into database ones,
 \section{Introduction}
 
 % focus has been elsewhere
-Healthcare organisations collect vast quantities of healthcare data, however at present it would be difficult to argue that this data is used to it's \textit{full potential}. Whilst there has been a concerted effort from machine learning researchers to automate various \textit{extractive} medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise the use of existing clinical data sources through automating the data analytics process.
+Healthcare organisations collect vast quantities of healthcare data, however at present it would be difficult to argue that this data is used to it's \textit{full potential}. Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information: leaving large population health benefits `on the table' so to speak.
+
+% Ensure this is rendered on page 2.
+\begin{figure*}[t]
+  \includegraphics[width=\linewidth]{content/system_diagram3.png}
+	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify it's results or asking follow up questions.}
+	\label{fig:system-diagram}
+\end{figure*}
 
 % Formulation
 \subsection{Task}
-This paper tackles the challenge of automating health informatics queries. This is a complex challenge as it encompasses a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query which best operationalises the user's intent. We ask the following three research questions:
+This paper attempts to generate population health queries from real-world user questions.
+This is a complex challenge as it encompasses a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query which best operationalises the user's goal.
+We ask the following three research questions:
 
-\textbf{R01:} Can we automate the mapping from a clinical question to a database query? Formally, given a clinical user's question $Q$ and a database of medical concepts and their occurrences $DB$,
+\textbf{RQ1:} Is it possible to automate the mapping from a clinical question to a database query? Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
 
-  $$ DB = (entities, relations) $$
+  $$ DB = (patients, concepts, events) $$
 
 can we construct a system, $M$, which maps unseen user questions to an appropriate answer $A$?
 
   $$ M(DB): \mathcal{Q} \rightarrow \mathcal{A} $$
 
-\textbf{RO2:} Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?
+\textbf{RQ2:} Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?
 
-\textbf{R03:} Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
+\textbf{RQ3:} Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
+
+\subsection{Task-Oriented Dialogue and LLM Agents}
+% todo: make more relevant to our work.
+Task-Oriented Dialogue (TOD) systems are those in which an agent converses with a user to perform a task, such as booking a flight. This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task. A sub-task of TOD is semantic parsing, the process of creating logical interpretations of an instruction / utterance in the context of the dialogue thus far in order to determine what action to perform next.
+
+Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility. A typical modular architecture might include a component for understanding the user's intent and extracting structured information from it (NLU); a component for tracking the state of the dialogue (DST); a policy module for determining the next action; and a final natural languge generation model for synthesising a response.  
+
+As pointed out in \citet{yi_a_survery_2024}, the propogation of errors between modules hampers the performance of these systems, and they have largely fallen to the wayside in favour of systems which utilize a single sequence-to-sequence model to perform the entire task. Examples of the latter include \citet{wen_network-based_2017}, who developed a novel NN architecture; Andreas et al., who were the first to treat TOD as a data flow graph in which the agent iteratively generates the program as the conversation progresses \citet{andreas_task-oriented_2020}. \citet{hoesseini-asl_2020} et al. created SimpleTOD, an end-to-end architecture utilising only one LM, GPT-2, to perform all aspects of task completion including database calls, with the results concatenated to the context.
+In sum, recent progress in TOD systems has been to move away from modular architectures and towards unified ones, epitomised by the SimpleTOD approach, which uses only a finetuned LLM. 
+
+
+% Two key challenges in TOD maintaining coherence over long multi-turn conversations (\citet{laban_llms_2025}), as well as identifying when f under-specified questions\cite{gan_clarq-llm_2024}
+In 2025, the most commonl form of TOD agents, referred to simply as `agents', are coding ones such as Claude Code, which can autonomously perform relatively long-horizon programming tasks issued via a command-line interface\cite{METR}.
+%LLM agents (agents) refer to instruction-tuned models which are augmented with tools (functions) which enable them to take actions within an environment e.g. retrieving information from Wikipedia in order to obtain an answer \cite{yao_reac_2023}.
+Similar to SimpleTOD executing database commands based on autoregressive modelling of the user's belief state, agents issue what's known as `tools-calls' through autoregressive language modelling. This is referred to as the `ReACT' paradigm, after the seminal paper from \citet{yao_reac_2023}.
+
+Agents can determine their course of action dynamically as opposed to performing tasks in a predefined sequence or pipeline.
+% In a task-oriented setting, they implicitly perform the NLU, DST, policy, and generation aspects which previously would have been distinct modules.
+% This change allows agents to dynamically interact with the environment and to change course as they progress and receive new information, enabling them to excel at complex tasks like programming where purely generative models typically fail.
+% sole task is to retreive information, a paradigm described as `agentic information retrieval' by \citet{zhang_agentic_2025}.
 
 
 \subsection{Health Informatics}
@@ -204,34 +233,9 @@ Semantic Parsing is the task of parsing a user's utterance into a logical statem
 % TEXT TO SQL (ziletti 2024,2025)
 \citet{ziletti_retrieval_2024} \citet{ziletti_generating_2025}
 
-\begin{figure*}[t]
-  \includegraphics[width=\linewidth]{content/system_diagram3.png}
-	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify it's results or asking follow up questions.}
-	\label{fig:system-diagram}
-\end{figure*}
-
 \section{Related Work}
 
 Our proposed agent-based, task-oriented dialogue system for medical database querying sits at the intersection of three strands of research: Task-Oriented Dialogue, agent-based information retrieval, and text-to-SQL.
-
-\subsection{Task-Oriented Dialogue}
-% todo: make more relevant to our work.
-Task-Oriented Dialogue (TOD) systems are those in which an agent converses with a user to perform a task, such as booking a flight. This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task. Semantic parsing: creating a logical interpretation of the user's utterance in the specific context, is a core component of TOD systems.
-
-Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility such as dialogue state-tracking or natural language generation.
-As pointed out in \citet{yi_a_survery_2024}, the propogation of errors between modules hampers the performance of these systems, and they have largely fallen by the wayside in favour of systems which utilize a single sequence-to-sequence model to perform the entire task. Examples of the latter include \citet{wen_network-based_2017}, who developed a novel NN architecture, and \citet{xu_rethinking_2024}, who created a framework for applying existing LLMs.
-
-% Two key challenges in TOD maintaining coherence over long multi-turn conversations (\citet{laban_llms_2025}), as well as identifying when f under-specified questions\cite{gan_clarq-llm_2024}
-
-\subsection{LLM Agents}
-LLM agents (agents) refer to instruction-tuned models which are augmented with tools (functions) which enable them to take actions within an environment e.g. retrieving information from Wikipedia in order to obtain an answer \cite{yao_reac_2023}. Importantly, agents have the ability to determine their course of action dynamically as opposed to performing tasks in a predefined sequence or pipeline. This change allows agents to dynamically interact with the environment and to change course as they progress and receive new information from the environment.
-
-% sole task is to retreive information, a paradigm described as `agentic information retrieval' by \citet{zhang_agentic_2025}.
-
-The ability to observe and correct mistakes means that agents are able to outperform LLMs in complex tasks like programming.
-Language models to obtain local knowledge required to perform many economically valuable tasks, such as reading a database schema in order to create a statement using the correct combination of tables and columns 
-In 2025, the most commonly used TOD agents are coding ones such as Claude Code, which are able to autonomously perform relatively long-horizon programming tasks issued via a command-line interface, adapting to the user's requests over multiple conversational turns\cite{METR}.
-
 
 \subsection{Text-to-SQL}
 Text-to-SQL is the task of operationalising a question by mapping it to a Structured Query Language (SQL) script.
@@ -273,7 +277,14 @@ The output modes include
 		& Is Nottingham West doing better than East on diabetes management? \\	
 \hline
 \end{tabular}
-	\label{tab:sample-queries}
+\caption{
+	Queries with named entities highlighted in various colours.
+	There a number of matching entities types and the agent must infer from the query both the appropriate entity and the appropriate entitiy type.
+	For instance for the phrase `\textcolor{blue}{dementia status}' is a request for a report (a specific columnar view of the patient list) but there also exist related
+	concepts (e.g. \textcolor{orange}{Dementia}) and KPIS which the model must determine are irrelevant to the query despite their lexical similarity.
+	\\ \textbf{Takeaway:} selecting entities to use the in the answer requires sophisticated interpretation of the user intent.  
+}
+\label{tab:sample-queries}
 \end{table}
 
 
@@ -292,7 +303,7 @@ for.
 \hline
 \hline
 	Concepts 	& \textcolor{orange}{Dementia} \\
-			& \textcolor{red}{Pancreatic Enzyme Replacement Therapy} \\
+	 	        & \textcolor{red}{Pancreatic Enzyme Replacement Therapy} \\
 			& Diabetes - L12M \\
 			& 2+ hospital admissions L12M \\
 			& Hip fracture \\ 
@@ -404,7 +415,7 @@ In cases where the user intent is unclear, semantic parsing issues become more f
 
 
 \section*{Acknowledgments}
-We thank the NHS Nottingham Data Management Team for their expertise and contributions to this project. Specifically we thank Anthony Dranfield and Ben Clarke for their assistance with the eHealthScope platform and database, and Carl Davis for organising the relevant equiptment.
+We thank the NHS Nottingham Data Management Team for their expertise and contributions to this project. We thank Anthony Dranfield and Ben Clarke for their assistance with the eHealthScope platform and database, and Carl Davis for organising the collaboration.
 
 \bibliography{references}
 
