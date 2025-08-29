@@ -113,7 +113,7 @@
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine its utility to a diverse userbase of 2,000 analysts and clinicians querying data from over 1.4M patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
+In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
 
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
 The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
@@ -167,7 +167,7 @@ can we construct a system, $M$, which maps unseen user questions to an appropria
 
 \subsection{Task-Oriented Dialogue and LLM Agents}
 % todo: make more relevant to our work.
-Task-Oriented Dialogue (TOD) systems are those in which an agent converses with a user to perform a task, such as booking a flight. This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task. A sub-task of TOD is semantic parsing, the process of creating logical interpretations of an instruction / utterance in the context of the dialogue thus far in order to determine what action to perform next.
+Task-Oriented Dialogues (TOD) are ones in which an agent and user collaborate to act out a user's goal. This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task. A sub-task of TOD is semantic parsing, the process of creating logical interpretations of an instruction / utterance in the context of the dialogue thus far in order to determine what action to perform next.
 
 Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility. A typical modular architecture might include a component for understanding the user's intent and extracting structured information from it (NLU); a component for tracking the state of the dialogue (DST); a policy module for determining the next action; and a final natural languge generation model for synthesising a response.  
 
