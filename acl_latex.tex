@@ -113,7 +113,7 @@
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying data from over 1.4M patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
+In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine its utility to a diverse userbase of 2,000 analysts and clinicians querying data from over 1.4M patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
 
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
 The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
@@ -282,6 +282,8 @@ The output modes include
 To enable the agent to access the relevant contents of various tables, we provide it with a search tool.
 The tool takes two arguments: a key, which is used for a simple substring match, and a mode, which is used to determine the type of entity being searched
 for.
+
+\subsubsection{Create Patient Cohort}
 
 \begin{table}[t]
 \centering
