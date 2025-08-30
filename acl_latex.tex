@@ -127,11 +127,9 @@ Specialist analysts are needed to translate clinical queries into database ones,
 
 
 \begin{figure}[t]
-  \includegraphics[width=\columnwidth]{content/chat_diagram.PNG}
-  \caption{A figure with a caption that runs for more than one line.
-    Example image is usually available through the \texttt{mwe} package
-    without even mentioning it in the preamble.}
-  \label{fig:experiments}
+  \includegraphics[width=0.9\columnwidth]{content/flow_diagram.PNG}
+	\caption{The flow of information in a dialogue with HealthQueryAgent (HQA). The agent generates database queries in a way which preserves privacy by design: no patient data ever leaves the secure environment, only medical concepts and other information required to \textit{construct} database queries.} 
+  \label{fig:flow-diagram}
 \end{figure}
 
 
@@ -228,13 +226,6 @@ In the context of the UK, where this study takes place, our National Health Serv
 
 HealthQueryAgent fits squarely within these aims. By enabling primary (community) care physicians to proactively pin-point people who need assistance, the burden can be shifted away from expensive secondary care services (hospitals / inpatient facilities).
 
-
-% SEMANTIC PARSING
-Semantic Parsing is the task of parsing a user's utterance into a logical statement.
-
-% TEXT TO SQL (ziletti 2024,2025)
-\citet{ziletti_retrieval_2024} \citet{ziletti_generating_2025}
-
 \section{Related Work}
 
 Our proposed agent-based, task-oriented dialogue system for medical database querying sits at the intersection of three strands of research: Task-Oriented Dialogue, agent-based information retrieval, and text-to-SQL.
@@ -242,7 +233,8 @@ Our proposed agent-based, task-oriented dialogue system for medical database que
 \subsection{Text-to-SQL}
 Text-to-SQL is the task of operationalising a question by mapping it to a Structured Query Language (SQL) script.
 
-Medical applications of text-to-SQL have largely focussed on translating natural language queries into database ones directly as part of health analyst workflows \citet{ziletti_retrieval_2024}.
+Medical applications of text-to-SQL have largely focussed on translating natural language queries into data warehouse queries as part of health analyst workflows \citet{ziletti_retrieval_2024, ziletti_generating_2025}
+
 
 \section{Method}
 % A method is like a recipe.
@@ -250,16 +242,27 @@ In this section we describe the HealthQueryAgent system and development process.
 
 % \subsection{Automated testing} ...
 
-\subsection{Workflows}
-...
-
 \subsection{Tools}
-The agent has a fixed set of tools provided in the industry standard json tools format.
-The tools contain brief descriptions of their function, and are mapped 1:1 with Python functions internally, using a switch-case statement.
+The agent has a fixed set of tools (functions) provided in the industry standard json tools format.
+The tools contain brief descriptions of their function (documentation), and are mapped 1:1 with Python functions internally, using a switch-case statement.
+Tools were designed to be simple, easy to compose, and powerful. Empirically we observed that agents performance was largely dependant on the quality of tool documentation.
+
+\subsection{Workflows}
+We provide abstract trajectories without specific named entities instead of in-context examples/exemplars.
+% In-context learning (ICL) using examples or `exemplars' was once the main way to improve task-specific performance of LLMs we propose using abstract exemplars or `workflows' to achieve the same end.
+Each abstract trajectory (workflow) describes a sequence of tool uses appropriate for a class of user request.
+For instance the following is a workflow for computing the prevalence (rate) of a condition within a population:
+
+\begin{enumerate}
+	\item search(..., mode="concepts")
+	\item create\_cohort(...)
+	\item return\_rate\_query(...)
+\end{enumerate}
+Unlike ICL exemplars, workflows/templates do not reference specific entities, thereby avoiding biasing the generation process towards the inclusion of these irrelevant items, a problem faced in prior art.
 
 \subsubsection{Return}
 The agent may return a result in the form of a URL link showing the user the result of the generated query, as well as the query itself.
-The output modes include
+The output modes include \texttt{patient\_list(cohort)}, \texttt{statistics(cohort)}, \texttt{performance\_indicator(cohort, KPI, location, comparison\_location)}.
 
 \begin{table}[t]
 \centering
@@ -289,14 +292,15 @@ The output modes include
 \label{tab:sample-queries}
 \end{table}
 
-
-
 \subsubsection{Search}
 To enable the agent to access the relevant contents of various tables, we provide it with a search tool.
 The tool takes two arguments: a key, which is used for a simple substring match, and a mode, which is used to determine the type of entity being searched
 for.
 
 \subsubsection{Create Patient Cohort}
+% todo
+Creating select queries for cohorts of patients is a key function of HQA, and much of the effort in optimising it's tools and abilities has been devoted to improving it's performance on this task.
+
 
 \begin{table}[t]
 \centering
@@ -353,30 +357,47 @@ We grade each agent according to the following two measures: \textbf{parsing}: d
 
 \section{Results}
 % (descriptive) What did our experiments show?
-
-
-\section{Conclusion}
-% What did we take away from these results?
-
-
 \begin{table}[t]
 \centering
-\begin{tabular}{|l|c|c|}
+\begin{tabular}{|l|l|l|}
 \hline
 	& user & agent \\
 \hline
-	dialogues	& XXX & YYY \\
-	utterances	& XXX & YYY \\
-	words 		& XXX & YYY \\
+	dialogues	& 500 & 500   \\
+	turns		& 666 & 1111  \\
+	words 		& 2223 & 7777 \\
+	tokens		& 3333 & 9999 \\
 \hline
 \end{tabular}
 \caption{Statistics of the HealthQueryAgent conversations.}
 \label{tab:results}
 \end{table}
 
+\begin{table}[t]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+	feedback	& count & \% absolute	& \% relative \\	
+\hline
+	positive 	& 77	& 0.8		& 0.7	\\
+\hspace{0.5cm} +text 	& 5	& 0.2		& 0.1 \\
+\hline
+	negative 	& 12 	& 0.2 		& 0.2 \\
+\hspace{0.5cm} +text	& 3	& 0.05		& 0.1	\\
+\hline
+\end{tabular}
+\caption{Human annotation of HealthQueryAgent's ability to respond to their request.}
+\label{tab:user-feedback}
+\end{table}
 
 
-\section*{Limitations}
+
+\section{Conclusion}
+% What did we take away from these results?
+
+
+
+\section{Limitations}
 
 \section{Ethics Statement}
 Population health management is a serious task, and the use of AI warrants proper ethical consideration.
@@ -393,6 +414,7 @@ The core risk we identify is that the system generates an incorrect output, lead
 		\item due to incorrect disambiguation e.g. of an overloaded terms
 		\item due to lack of specialist knowledge e.g. multiple competing database concepts for the same utterance   
 		\item due to under-specification of the user intent
+		\item due to no appropriate concept existing 
 		\item due to confabulation
 		\item due to random chance
 	\end{enumerate}
