@@ -130,10 +130,51 @@ Specialist analysts are needed to translate clinical queries into database ones,
 \end{abstract}
 
 
-\begin{figure}[t]
-  \includegraphics[width=0.9\columnwidth]{content/flow_diagram.PNG}
-	\caption{The flow of information in a dialogue with HealthQueryAgent (HQA). The agent generates database queries in a way which preserves privacy by design: no patient data ever leaves the secure environment, only medical concepts and other information required to \textit{construct} database queries.} 
-  \label{fig:flow-diagram}
+\begin{figure}[h!]
+
+\textbf{User:}
+
+{\leftskip 0.6cm
+
+\textit{Which patients are \textcolor{Cerulean}{aged 75+} with \textcolor{Rhodamine}{moderate or severe frailty} in \textcolor{OliveGreen}{Nottingham West}, and who have either \textcolor{Maroon}{2+ emergency admissions in the last 12 months} or \textcolor{PineGreen}{polypharmacy of 5 or more medications?}} \\
+
+}
+
+\textbf{Agent:}
+
+{\leftskip 0.6cm
+
+	\textit{I'll collect the appropriate concepts, compose a db query, and present the data to the user in a report related to the question, which is asking about frail patients.} \\
+
+	\ttfamily
+	search\_concepts('75+') \\
+	search\_concepts('frailty') \\
+	... \\ %search('Nottingham West'); search('emergency admissions'); search('polypharmacy');}
+	compose\_query(...) -> QueryID \\
+	search\_reports('frailty') -> ReportID
+	display(QueryID, reportID) \\
+\par
+}
+
+\textbf{Query:}
+
+{\leftskip 0.6cm
+
+	\textcolor{Cerulean}{Aged >=75}
+
+	\textbf{\textcolor{Violet}{AND}} \textcolor{Rhodamine}{Frailty Score 6-9 Aged >=65}
+	
+	\textbf{\textcolor{Violet}{AND}} \textcolor{OliveGreen}{Nottingham West PCN}
+	
+	\textbf{\textcolor{Violet}{AND}}  (\textcolor{Maroon}{2+ emergency admissions L12M}
+	
+	\hspace{2cm}	\textbf{\textcolor{Violet}{OR}}  \textcolor{PineGreen}{Polypharmacy 5+})
+}
+\caption{
+	HealthQueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
+	The agent must carefully select entities, for instance using \textcolor{Rhodamine}{Moderate or severe frailty Aged >= 65} out of -100 %\nDistractorsForCFS{}
+	distractor concepts, such as \textcolor{BrickRed}{eFI frailty Moderate or Severe} -- a less precise measurement of frailty in the real-world, and thus a suboptimal operationalisation of the question.
+}
 \end{figure}
 
 
@@ -143,11 +184,14 @@ Specialist analysts are needed to translate clinical queries into database ones,
 Healthcare organisations collect vast quantities of healthcare data, however at present it would be difficult to argue that this data is used to it's \textit{full potential}. Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information: leaving large population health benefits `on the table' so to speak.
 
 % Ensure this is rendered on page 2.
+
+
 \begin{figure*}[t]
   \includegraphics[width=\linewidth]{content/system_diagram3.png}
 	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify its results or asking follow up questions.}
 	\label{fig:system-diagram}
 \end{figure*}
+
 
 % Formulation
 \subsection{Task}
@@ -239,6 +283,15 @@ Text-to-SQL is the task of operationalising a question by mapping it to a Struct
 % One of the design goals of SQL was that non-programmers would be able to read and write queries \cite{chamberlin_early_2012}.
 
 In this work, we generate an SQL query by first generating an intermediate representation which is then programmatically transformed into SQL, similar to in \cite{guo_towards_2019}.
+
+
+\begin{figure}[t]
+  \includegraphics[width=0.9\columnwidth]{content/flow_diagram.PNG}
+	\caption{The flow of information in a dialogue with HealthQueryAgent (HQA). The agent generates database queries in a way which preserves privacy by design: no patient data ever leaves the secure environment, only medical concepts and other information required to \textit{construct} database queries.} 
+  \label{fig:flow-diagram}
+\end{figure}
+
+
 
 \section{Method}
 % A method is like a recipe.
