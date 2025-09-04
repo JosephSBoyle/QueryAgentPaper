@@ -162,7 +162,7 @@ Specialist analysts are needed to translate clinical queries into database ones,
 
 	\textcolor{Cerulean}{Aged >=75}
 
-	\textbf{\textcolor{Violet}{AND}} \textcolor{Rhodamine}{Frailty Score 6-9 Aged >=65}
+	\textbf{\textcolor{Violet}{AND}} \textcolor{Rhodamine}{CFS Moderate or Severe Aged >=65}
 	
 	\textbf{\textcolor{Violet}{AND}} \textcolor{OliveGreen}{Nottingham West PCN}
 	
@@ -172,9 +172,10 @@ Specialist analysts are needed to translate clinical queries into database ones,
 }
 \caption{
 	HealthQueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
-	The agent must carefully select entities, for instance using \textcolor{Rhodamine}{Moderate or severe frailty Aged >= 65} out of -100 %\nDistractorsForCFS{}
-	distractor concepts, such as \textcolor{BrickRed}{eFI frailty Moderate or Severe} -- a less precise measurement of frailty in the real-world, and thus a suboptimal operationalisation of the question.
+	The agent must carefully select entities with which to create the query. For instance, choosing \textcolor{Rhodamine}{CFS Moderate or Severe Aged >= 65} out of \~100 %\nDistractorsForCFS{}
+	retrieved concepts.
 }
+\label{fig:question-to-query}
 \end{figure}
 
 
@@ -356,19 +357,23 @@ for.
 
 \subsubsection{Create Patient Cohort}
 % todo
-Creating select queries for cohorts of patients is a key function of HQA, and much of the effort in optimising it's tools and abilities has been devoted to improving it's performance on this task.
+Creating select queries for cohorts of patients is a key function of HQA.
+An example of a question requiring the user to create a cohort is shown in Figure \ref{fig:question-to-query}.
+Much of the effort in optimising it's tools and abilities has been devoted to improving it's performance on this task.
 
-\enquote{
-Who is \textcolor{CornflowerBlue}{aged 75+} with \textcolor{Rhodamine}{moderate or severe frailty} in \textcolor{OliveGreen}{Nottingham West}, and who have either \textcolor{Maroon}{2+ emergency admissions in the last 12 months} or \textcolor{PineGreen}{polypharmacy of 5 or more medications?}
-}
+%\enquote{
+%Who is \textcolor{CornflowerBlue}{aged 75+} with \textcolor{Rhodamine}{moderate or severe frailty} in \textcolor{OliveGreen}{Nottingham West}, and who have either \textcolor{Maroon}{2+ emergency admissions in the last 12 months} or \textcolor{PineGreen}{polypharmacy of 5 or more medications?}
+%}
 
-\begin{verbatim}
-Aged >=75 AND Frailty Score 6-8
-AND Nottingham West PCN
-AND (2+ emergency admissions L12M
-	OR Polypharmacy 5+ medications)
+%\begin{verbatim}
+%Aged >=75 AND Frailty Score 6-8
+%AND Nottingham West PCN
+%AND (2+ emergency admissions L12M
+%	OR Polypharmacy 5+ medications)
 
-\end{verbatim}
+%\end{verbatim}
+
+
 
 \begin{table}[t]
 \centering
