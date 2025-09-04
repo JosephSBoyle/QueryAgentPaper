@@ -198,19 +198,21 @@ Healthcare organisations collect vast quantities of healthcare data, however at 
 \subsection{Task}
 This paper attempts to generate population health queries from real-world user questions.
 This is a complex challenge as it encompasses a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query which best operationalises the user's goal.
-We ask the following three research questions:
+We make the following three contributions:
 
-\textbf{RQ1:} Is it possible to automate the mapping from a clinical question to a database query? Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
+\textbf{One:} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
 
   $$ DB = (patients, concepts, events) $$
 
-can we construct a system, $M$, which maps unseen user questions to an appropriate answer $A$?
+we construct a system, $M$, which maps unseen user questions to a useful answer $A$:
 
   $$ M(DB): \mathcal{Q} \rightarrow \mathcal{A} $$
 
-\textbf{RQ2:} Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?
+\textbf{Two:} We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
 
-\textbf{RQ3:} Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
+\textbf{Three:}  We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
+
+% Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
 
 \subsection{Task-Oriented Dialogue and LLM Agents}
 % todo: make more relevant to our work.
@@ -358,7 +360,7 @@ for.
 \subsubsection{Create Patient Cohort}
 % todo
 Creating select queries for cohorts of patients is a key function of HQA.
-An example of a question requiring the user to create a cohort is shown in Figure \ref{fig:question-to-query}.
+An example of a question requiring the user to create a cohort is shown in Figure \ref{fig:question-to-query}.:/
 Much of the effort in optimising it's tools and abilities has been devoted to improving it's performance on this task.
 
 %\enquote{
