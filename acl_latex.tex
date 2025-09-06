@@ -197,10 +197,10 @@ Healthcare organisations collect vast quantities of healthcare data, however at 
 % Formulation
 \subsection{Task}
 This paper attempts to generate population health queries from real-world user questions.
-This is a complex challenge as it encompasses a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query which best operationalises the user's goal.
+This is a complex challenge encompassing a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query.
 We make the following three contributions:
 
-\textbf{One:} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
+\textbf{One: \ref{contribution-one}} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
 
   $$ DB = (patients, concepts, events) $$
 
@@ -293,7 +293,6 @@ In this work, we generate an SQL query by first generating an intermediate repre
 	\caption{The flow of information in a dialogue with HealthQueryAgent (HQA). The agent generates database queries in a way which preserves privacy by design: no patient data ever leaves the secure environment, only medical concepts and other information required to \textit{construct} database queries.} 
   \label{fig:flow-diagram}
 \end{figure}
-
 
 
 \section{Method}
@@ -428,7 +427,7 @@ To ensure that no personal data can be accessed by the agent, we create a select
 To test each hypothesis we construct an experiment designed to falsify it.
 Additionally we test the usefulness of particular augmentations to the agent in solving a given task through appropriate ablations.
 
-\subsection*{RQ1: is it possible to automate mapping from a clinical question to a database query?}
+\subsection*{RQ1 Can we automatically map clinical questions to queries?}
 
 To test this key hypothesis we evaluate two measures of success.
 First, we measure the ability of our system to generate a query determined to be `useful' by the clinician or analyst, using labels assigned during real-world use shown in Table \ref{tab:user-feedback}.
