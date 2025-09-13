@@ -200,7 +200,9 @@ This paper attempts to generate population health queries from real-world user q
 This is a complex challenge encompassing a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query.
 We make the following three contributions:
 
-\textbf{One: \ref{contribution-one}} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
+\begin{enumerate}
+
+\item \textbf{One: \ref{contribution-one}} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
 
   $$ DB = (patients, concepts, events) $$
 
@@ -208,9 +210,10 @@ we construct a system, $M$, which maps unseen user questions to a useful answer 
 
   $$ M(DB): \mathcal{Q} \rightarrow \mathcal{A} $$
 
-\textbf{Two:} We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
+\item \textbf{Two:} We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
 
-\textbf{Three:}  We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
+\item \textbf{Three:}  We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
+\end{enumerate}
 
 % Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
 
