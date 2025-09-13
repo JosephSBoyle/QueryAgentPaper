@@ -5,7 +5,8 @@
 
 \usepackage[dvipsnames]{xcolor}
 \usepackage{csquotes}
-
+\usepackage{hyperref}
+\usepackage{xurl}
 %%%%%%%%%%%%%%%%%%%%
 
 % Change "review" to "final" to generate the final (sometimes called camera-ready) version.
@@ -468,9 +469,13 @@ Much of the effort in optimising it's tools and abilities has been devoted to im
 \end{table}
 
 
-\subsection{Privacy preserving design}
-Personal health information cannot be processed by third-party APIs.
-To ensure that no personal data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any derivates thereof; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions, as shown in Figure \ref{fig:system-diagram}.
+\subsection{Data Protection} 
+Ethically there is a responsibility to treat patient data as confidental and to share it strictly on a `need to know' basis.
+Concepts pertaining to a certain record would be considered confidential information, even if the patient name and other identifiers were pseudonymised
+\footnote{Under UK law, the information pertaining to a person is considered confidential even if it is anonymised.
+\url{https://www.digitalregulations.innovation.nhs.uk/regulations-and-guidance-for-developers/all-developers-guidance/proof-of-concept-using-anonymous-or-artificial-health-data/}
+}. 
+To ensure that no confidential data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any tables derived from it; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions, as shown in Figure \ref{fig:system-diagram}.
 
 
 \section{Experimental Setup}
@@ -559,8 +564,6 @@ We compare the model's ability to complete tasks requiring these concepts with a
 \label{tab:user-feedback}
 \end{table}
 
-
-
 \begin{table}[ht]
 \centering
 \begin{tabular}{|l|l|l|}
@@ -576,6 +579,24 @@ We compare the model's ability to complete tasks requiring these concepts with a
 }
 \label{tab:expert-feedback}
 \end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+				& \textbf{SR} & \textbf{Steps} & \textbf{Tokens} \\
+\hline
+HQA 				& -50\% & -5 & -1,500,000 \\
+\hline
+HQA + sub-agent			& -55\% & -5 & -1,000,000 \\
+\hline
+HQA + sub-agent w/ UMLS		& -60\% & -6 & -1,000,000 \\
+\hline
+\end{tabular}
+	\caption{Performance for HealthQueryAgent (HQA) with ablations for it's Retrieval sub-agent and the UMLS knowledge base.}
+	\label{tab:results-for-single-queries}
+\end{table}
+
 
 
 \section{Conclusion}
