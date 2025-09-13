@@ -235,10 +235,43 @@ been demonstrated to \cite{kwa_measuring_2025}.
 %LLM agents (agents) refer to instruction-tuned models which are augmented with tools (functions) which enable them to take actions within an environment e.g. retrieving information from Wikipedia in order to obtain an answer \cite{yao_reac_2023}.
 Similar to SimpleTOD executing database commands based on autoregressive modelling of the user's belief state, state-of-the-art agents issue what's known as `tools-calls' through autoregressive language modelling. This is referred to as the `ReACT' paradigm, after the seminal paper from \citet{yao_reac_2023} which popularised the approach. To conclude, LLM agents are a new and powerful approach to goal-oriented dialogue systems, in which the agent can autonomously and iteratively interact with it's environment in order to accomplish the user's goals.
 
+
+\subsection{Agentic Information Retrieval}
+Agentic IR (AIR) is a new paradigm in which language models iteratively interact with the environment in the `ReAct' loop to retrieve information \citet{zhang_agentic_2025}.
+The key of an agentic approach to IR over a traditional one is the ability to adapt their search as information is collected.
+%This makes the agentic approach more robust to various linguistic phenomena.
+
+Agentic IR methods are a rapid area of development, with successful systems employing a variety of different tools for agents to IR.
+For instance, the current SOTA coding agent, Claude Code, uses only a lexical search function, akin to UNIX's `grep' tool to retrieve files, whilst Windsurf, a popular agentic coding IDE, uses a more complex system involving embeddings. We categorise these two approaches into \textbf{lexical} and \textbf{semantic} approaches to agentic-IR.
+
+\subsection{Medical Code and Concept Retrieval}
+Prior art for retrieving medical codes has tended to use non-agentic, retrieval pipelines based on semantic similarity \citet{baksi_medcoder_2024, ziletti_retrieval_2024}.
+These systems operate at the level of medical codes, such as ICD-10 codes and their descriptions, whereas our system operates at a level higher: using internally defined `concepts'
+	\footnote{NB: the popular medical vocabulary SNOMED-CT refers to its codes as `concepts'.}
+representing logical compositions of codes, such as `Cirrhosis and no liver transplant'.
+These concepts are used to select cohorts of patients matching their criteria.
+
+\textbf{Concept retrieval} is a critical sub-task upon which generating successful queries depends.
+Retrieving appropriate concepts is more challenging than retrieving medical codes, since - unlike codes - we cannot rely on the LLM to have learnt concept names during the pre-training phase.
+%Indeed concept names often require substantial local knowledge to understand.
+% DIFFERENCES TO MEDICAL CODING:
+%Mapping utterances to concepts requires handling of polysemy, synonymy, metonymy, and (overloaded) abbreviations, as well as local knowledge on naming conventions. Due to this complexity, 
+
+Due to the ambiguity inherent in many natural language utterances, the agent often must act under imperfect information.
+This leads to cases where the model changes it's interpretation of the user's utterance dynamically based on the content of it's information environment.
+For example, the agent interprets \textit{`give me patients with CFS'} as a search for patients with \textbf{c}hronic \textbf{f}atigue \textbf{s}yndrome but changes it's interpretation upon seeing that all CFS concepts refer to the Clinical Frailty Scale. 
+
+We experiment with a sub-agent for retrieving the correct concepts, a divide and conquer strategy in which the sub-agent retrieves entities and the main agent composes them into a query.
+This simple task decomposition reduces the context poisoning which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back relevant entities, instead of the many hundred concepts returned by lexical search (`diabetes' returns 407 concepts, for instance).
+
+We demonstrate that this improves agent success rate (SR), particularly in complex multi-turn conversations in which the context contains a lot of information.
+We hypothesise that this is due to the irrelevant entities `distracting' the model via the attention mechanism, a hypothesis we provide evidence for through the inspection of attention-weights. % Is attention weight given to incorrect entities at the expense of correct ones!? Find out.
+
+% We elect to use a lexical AIR approach, eschewing the complexity of creating and maintaining a semantic index of medical concepts.
+
 % In a task-oriented setting, they implicitly perform the NLU, DST, policy, and generation aspects which previously would have been distinct modules.
 % This change allows agents to dynamically interact with the environment and to change course as they progress and receive new information, enabling them to excel at complex tasks like programming where purely generative models typically fail.
 % sole task is to retreive information, a paradigm described as `agentic information retrieval' by \citet{zhang_agentic_2025}.
-
 
 \subsection{Health Informatics}
 % Informatics
@@ -300,16 +333,24 @@ In this work, we generate an SQL query by first generating an intermediate repre
 
 \section{Method}
 % A method is like a recipe.
-In this section we describe the HealthQueryAgent system and development process.
+
+HealthQueryAgent is an LLM based, end-to-end task-oriented dialogue system.
+In this section, we describe it's components and how they integrate.
 
 % \subsection{Automated testing} ...
+\subsection{Retrieval Sub-Agent}
+Identifying the appropriate medical concepts in a real-world clinical database is a challenging sub-task within HealthQueryAgent's workflows.
+The task involves elements of semantic parsing and disambiguation, handling of polysemy, synonymy, metonymy, and abbreviations, as well as local knowledge on naming conventions.
 
-\subsection{Tools}
-The agent has a fixed set of tools (functions) provided in the industry standard json tools format.
-The tools contain brief descriptions of their function (documentation), and are mapped 1:1 with Python functions internally, using a switch-case statement.
-Tools were designed to be simple, easy to compose, and powerful. Empirically we observed that agents performance was largely dependant on the quality of tool documentation.
+The retrieval sub-agent is prompted to identify the top-$k$ most relevant concepts for a given NL expression, using two tools, one for searching concepts, and one for returning concepts by their IDs.
+Returning concepts ends the sub-agents routine, and continues the main agent's trajectory with the newly-retrieved concepts.
+
+To aid the model interpret highly specialised and evolving clinical language, the sub-agent may be provided with a third tool: `search\_umls', which enables it to retrieve information from the Unified Medical Language System® (UMLS®).
+Information retrieved this way often includes mapping compound names/acronyms to drug names, e.g. `ddC' -> `dideoxycytidine' -> `Zalcitabine' (a drug used to treat HIV).
+This improves the agent's SR on tasks involving niche knowledge.
 
 \subsection{Workflows}
+
 We provide abstract trajectories without specific named entities instead of in-context examples/exemplars.
 % In-context learning (ICL) using examples or `exemplars' was once the main way to improve task-specific performance of LLMs we propose using abstract exemplars or `workflows' to achieve the same end.
 Each abstract trajectory (workflow) describes a sequence of tool uses appropriate for a class of user request.
@@ -321,6 +362,12 @@ For instance the following is a workflow for computing the prevalence (rate) of 
 	\item return\_rate\_query(...)
 \end{enumerate}
 Unlike ICL exemplars, workflows/templates do not reference specific entities, thereby avoiding biasing the generation process towards the inclusion of these irrelevant items, a problem faced in prior art.
+
+
+\subsection{Tools}
+The agent has a fixed set of tools (functions) provided in the industry standard json tools format.
+The tools contain brief descriptions of their function (documentation), and are mapped 1:1 with Python functions internally, using a switch-case statement.
+Tools were designed to be simple, easy to compose, and powerful. Empirically we observed that agents performance was largely dependant on the quality of tool documentation.
 
 \subsubsection{Return}
 The agent may return a result in the form of a URL link showing the user the result of the generated query, as well as the query itself.
