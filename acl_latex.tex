@@ -139,58 +139,13 @@ Specialist analysts are needed to translate clinical queries into database ones,
 \begin{figure}[htbp]
 \centering
 \includestandalone{figure\_one}
-\caption{Database Query Flow}
-\label{fig:query-flow}
-\end{figure}
-
-\begin{figure}[h!]
-
-\textbf{User:}
-
-{\leftskip 0.6cm
-
-\textit{Which patients are \textcolor{Cerulean}{aged 75+} with \textcolor{Rhodamine}{moderate or severe frailty} in \textcolor{OliveGreen}{Nottingham West}, and who have either \textcolor{Maroon}{2+ emergency admissions in the last 12 months} or \textcolor{PineGreen}{polypharmacy of 5 or more medications?}} \\
-
-}
-
-\textbf{Agent:}
-
-{\leftskip 0.6cm
-
-	\textit{I'll collect the appropriate concepts, compose a db query, and present the data to the user in a report related to the question, which is asking about frail patients.} \\
-
-	\ttfamily
-	search\_concepts('75+') \\
-	search\_concepts('frailty') \\
-	... \\ %search('Nottingham West'); search('emergency admissions'); search('polypharmacy');}
-	compose\_query(...) -> QueryID \\
-	search\_reports('frailty') -> ReportID
-	display(QueryID, reportID) \\
-\par
-}
-
-\textbf{Query:}
-
-{\leftskip 0.6cm
-
-	\textcolor{Cerulean}{Aged >=75}
-
-	\textbf{\textcolor{Violet}{AND}} \textcolor{Rhodamine}{CFS Moderate or Severe Aged >=65}
-	
-	\textbf{\textcolor{Violet}{AND}} \textcolor{OliveGreen}{Nottingham West PCN}
-	
-	\textbf{\textcolor{Violet}{AND}}  (\textcolor{Maroon}{2+ emergency admissions L12M}
-	
-	\hspace{2cm}	\textbf{\textcolor{Violet}{OR}}  \textcolor{PineGreen}{Polypharmacy 5+})
-}
 \caption{
-	HealthQueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
-	The agent must carefully select entities with which to create the query. For instance, choosing \textcolor{Rhodamine}{CFS Moderate or Severe Aged >= 65} out of \~100 %\nDistractorsForCFS{}
-	retrieved concepts.
-}
-\label{fig:question-to-query}
-\end{figure}
+HealthQueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
+The data environment comprises a local database of analyst-created medical concepts, and an open-access knowledge-base, UMLS, which is used to help ground the agent faithfully map clinical surface forms (e.g. `ddC') to local concepts, a process which involves multi-step information retrieval.
+HealthQueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that it can focus on \textit{composing} the database query.}
+\label{fig:query-flow}
 
+\end{figure}
 
 \section{Introduction}
 
