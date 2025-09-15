@@ -7,6 +7,12 @@
 \usepackage{csquotes}
 \usepackage{hyperref}
 \usepackage{xurl}
+
+\usepackage{standalone}
+\usepackage{tikz}
+\usetikzlibrary{shapes, arrows.meta, positioning, fit}
+
+
 %%%%%%%%%%%%%%%%%%%%
 
 % Change "review" to "final" to generate the final (sometimes called camera-ready) version.
@@ -130,6 +136,12 @@ Specialist analysts are needed to translate clinical queries into database ones,
 % These instructions should be used both for papers submitted for review and for final versions of accepted papers.
 \end{abstract}
 
+\begin{figure}[htbp]
+\centering
+\includestandalone{figure\_one}
+\caption{Database Query Flow}
+\label{fig:query-flow}
+\end{figure}
 
 \begin{figure}[h!]
 
