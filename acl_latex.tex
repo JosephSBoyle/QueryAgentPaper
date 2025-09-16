@@ -121,10 +121,15 @@
 %}
 
 \begin{document}
+
+% load results values
+\include{results_development}
+
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks. We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
+In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks.
+% We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
 
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
 The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
@@ -143,7 +148,7 @@ Specialist analysts are needed to translate clinical queries into database ones,
 HealthQueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
 The data environment comprises a local database of analyst-created medical concepts, and an open-access knowledge-base, UMLS, which is used to help ground the agent faithfully map clinical surface forms (e.g. `ddC') to local concepts, a process which involves multi-step information retrieval.
 HealthQueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that it can focus on \textit{composing} the database query.}
-\label{fig:query-flow}
+\label{fig:question-to-query}
 
 \end{figure}
 
@@ -170,7 +175,7 @@ We make the following three contributions:
 
 \begin{enumerate}
 
-\item \textbf{One: \ref{contribution-one}} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
+\item \textbf{1:} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
 
   $$ DB = (patients, concepts, events) $$
 
@@ -178,20 +183,24 @@ we construct a system, $M$, which maps unseen user questions to a useful answer 
 
   $$ M(DB): \mathcal{Q} \rightarrow \mathcal{A} $$
 
-\item \textbf{Two:} We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
+\item \textbf{2:} We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
 
-\item \textbf{Three:}  We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
+\item \textbf{3:}  We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
 \end{enumerate}
 
 % Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
 
 \subsection{Task-Oriented Dialogue and LLM Agents}
 % todo: make more relevant to our work.
-Task-Oriented Dialogues (TOD) are ones in which an agent and user collaborate to act out a user's goal. This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task. A sub-task of TOD is semantic parsing, the process of creating logical interpretations of an instruction / utterance in the context of the dialogue thus far in order to determine what action to perform next.
+Task-Oriented Dialogues (TOD) are ones in which an agent and user collaborate to act out a user's goal.
+This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task.
+A sub-task of TOD is semantic parsing, the process of creating logical interpretations of an instruction / utterance in the context of the dialogue thus far in order to determine what action to perform next.
 
-Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility. A typical modular architecture might include a component for understanding the user's intent and extracting structured information from it (NLU); a component for tracking the state of the dialogue (DST); a policy module for determining the next action; and a final natural languge generation model for synthesising a response.  
+Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility.
+A typical modular architecture might include a component for understanding the user's intent and extracting structured information from it (NLU); a component for tracking the state of the dialogue (DST); a policy module for determining the next action; and a final natural languge generation model for synthesising a response.  
 
-As pointed out in \citet{yi_survey_2025}, the propogation of errors between modules hampers the performance of these systems, and they have largely fallen to the wayside in favour of systems which utilize a single sequence-to-sequence model to perform the entire task. Examples of the latter include \citet{wen_network-based_2017}, who developed a novel NN architecture and \citet{andreas_task-oriented_2020} were the first to treat TOD as a data flow graph in which the agent iteratively generates the program as the conversation progresses.
+As pointed out by \citet{yi_survey_2025}, the propagation of errors between modules hampers the performance of these systems, and they have largely fallen to the wayside in favour of systems which utilize a single sequence-to-sequence model to perform the entire task.
+Examples of the latter include \citet{wen_network-based_2017}, who developed a novel NN architecture and \citet{andreas_task-oriented_2020} were the first to treat TOD as a data flow graph in which the agent iteratively generates the program as the conversation progresses.
 
 \citet{hosseini-asl_simple_2022} created SimpleTOD, an end-to-end architecture utilising only a single pre-trained language model, GPT-2, to perform all aspects of task completion including database calls, with the results concatenated to the context.
 In sum, recent progress in TOD systems has been to move away from modular architectures and towards unified ones, epitomised by the SimpleTOD approach, which uses only a finetuned LLM. 
@@ -317,6 +326,7 @@ To aid the model interpret highly specialised and evolving clinical language, th
 Information retrieved this way often includes mapping compound names/acronyms to drug names, e.g. `ddC' -> `dideoxycytidine' -> `Zalcitabine' (a drug used to treat HIV).
 This improves the agent's SR on tasks involving niche knowledge.
 
+
 \subsection{Workflows}
 
 We provide abstract trajectories without specific named entities instead of in-context examples/exemplars.
@@ -329,8 +339,8 @@ For instance the following is a workflow for computing the prevalence (rate) of 
 	\item create\_cohort(...)
 	\item return\_rate\_query(...)
 \end{enumerate}
-Unlike ICL exemplars, workflows/templates do not reference specific entities, thereby avoiding biasing the generation process towards the inclusion of these irrelevant items, a problem faced in prior art.
 
+Unlike ICL exemplars, workflows/templates do not reference specific entities, thereby avoiding biasing the generation process towards the inclusion of these irrelevant items, a problem faced in prior art.
 
 \subsection{Tools}
 The agent has a fixed set of tools (functions) provided in the industry standard json tools format.
@@ -446,10 +456,12 @@ To ensure that no confidential data can be accessed by the agent, we create a se
 
 
 \section{Experimental Setup}
-To test each hypothesis we construct an experiment designed to falsify it.
-Additionally we test the usefulness of particular augmentations to the agent in solving a given task through appropriate ablations.
+Our framework is agnostic to the choice of LLM. We choose to evaluate using Gemini 2.5 Flash \citet{comanici_gemini_2025}, as Gemini 2.0 was identified as being the best-performing model in the closest prior art \citet{ziletti_generating_2025}.
+Due to the iterative nature of prompt-development, we believe that our system and tool prompts are biased towards this model in a way that would make comparison to other models misleading, and so we report metrics only for Gemini 2.5 Flash.
 
-\subsection*{RQ1 Can we automatically map clinical questions to queries?}
+We run a real-world evaluation using 2.5 Flash in a zero-shot setup with `medium' thinking enabled, allowing the agent to reflect on the state of the conversation before generating it's utterance (text) and actions (tool-calls).
+
+\subsection*{Can we automatically map clinical questions to queries?}
 
 To test this key hypothesis we evaluate two measures of success.
 First, we measure the ability of our system to generate a query determined to be `useful' by the clinician or analyst, using labels assigned during real-world use shown in Table \ref{tab:user-feedback}.
@@ -461,116 +473,171 @@ Second, we get an experienced data analyst to grade 100 agent trajectories accor
 \end{enumerate}
 
 
-\subsection*{RQ2: Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?}
+\subsection*{Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?}
 
 To test this we construct a serial benchmark of tasks that the agent is known to be capable of, and measure the relative performance degradation when the chat context contains unrelated task completions.
 
-\subsection*{RQ3: Does providing an external KB enhance the agent's ability to generate queries?}
+\subsection*{Does providing an external KB enhance the agent's ability to generate queries?}
 
 To test this, we sample some of the rarer medical concepts available in the database and manually curate sets of synonyms and metonyms for those entities.
 We compare the model's ability to complete tasks requiring these concepts with and without access to the UMLS KB as a resource.
 
 \section{Results}
+Our results are divided into two sections: one from our real-world user evaluation, and one from our evaluation using queries drawn from \citet{ziletti_generating_2025}.
 % (descriptive) What did our experiments show?
 
-\begin{table}[ht]
-\centering
-\begin{tabular}{|l|l|l|}
+\subsection{Cohort Query Evaluation}
+\begin{table}[h]
+\begin{tabular}{|l|l|l|l|l|}
 \hline
-	& user & agent \\
+                            &    EX.    & Rec.  & Prec. & F1\\ 
 \hline
-	dialogues	& 500 & 500   \\
-	turns		& 666 & 1111  \\
-	words 		& 2223 & 7777 \\
-	tokens		& $1.5 \times 10^3$ & $2.7 \times 10^7$ \\
+\textbf{HQA}                &   56.7\% &       &       &   \\
+\textbf{+IR-Agent}          &   56.4\% &       &       &   \\
+% \textbf{+UMLS}              &          &       &       &   \\
 \hline
 \end{tabular}
-\caption{Summary statistics for HealthQueryAgent's conversations.}
-\label{tab:conversation-statistics}
+\caption{
+    HealthQueryAgent's (HQA) performance on public cohort questions published in \citet{ziletti_generating_2025}, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. Performance is determined relative to a pre-determined reference answer created by a professional analyst. EX. = Execution accuracy (exact match); F1 = F1 score.
+}
 \end{table}
+
+
+\subsection{Real World User Evaluation}
+This section contains results demonstrating the ability of HealthQueryAgent to answer population health questions in a real-world clinical database environment.
 
 \begin{table}[ht]
 \centering
 \begin{tabular}{|l|l|l|l|}
 \hline
-	feedback	& count & \% absolute	& \% relative \\	
+	              & User & Agent & Tool \\
 \hline
-	positive 	& 77	& 0.8		& 0.7	\\
-\hspace{0.5cm} +text 	& 5	& 0.2		& 0.1 \\
+	dialogues	& 108 & 108    & -   \\
+	turns       & 178 & 178    & -   \\
+    utterances	& 178 & 837    & 403   \\
+	words 		& 2,221 & 16,892 & 315,429 \\
+	est. tokens	& 3,184 & 24,322 & 450,612\\
 \hline
-	negative 	& 12 	& 0.2 		& 0.2 \\
-\hspace{0.5cm} +text	& 3	& 0.05		& 0.1	\\
+\end{tabular}
+\caption{
+Summary statistics for HealthQueryAgent's conversations.
+`Tool' indicates the result of a tool-use, e.g. a database search.
+\textbf{Takeaway: the majority of words in the conversations were tool call results.}
+}
+\label{tab:conversation-statistics}
+\end{table}
+
+Figure \ref{tab:conversation-statistics} describes the conversations recorded in our real world user evaluation.
+The number of words generated by the LLM seems to dominate that of the user, despite our generative LLM having `thinking' turned on enabling it to generate tokens outside of the conversation.
+The number of words in the conversation from tool-calls dominates that of the user and agent combined by an OOM.
+
+The number of turns is the same for user and agent messages, since the agent will respond to each user message.
+The number of utterances is a count of discrete messages, e.g. interleaved text and tool-calls by the agent; for users this will be the same as the number of turns since a user cannot follow their own turn of speech.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+	            & count & absolute  	&  relative \\	
+\hline
+	positive 	& 78	& 12.0\%		& 78.8\%	\\
+% \hspace{0.5cm} +text 	& 5	& 0.2		& 0.1 \\
+\hline
+	negative 	& 21 	& 3.2\%      	& 21.2\%\\
+% \hspace{0.5cm} +text	& 3	& 0.05		& 0.1	\\
 \hline	
 \end{tabular}
 \caption{
 	User labels annotated during the beta testing deployment.
 	Users were prompted with the message `was this useful?' and a thumbsup / thumbsdown option denoting positive / negative feedback.
-	\textbf{Our system was generally rated as being useful by clinical and analyst staff.}	
+    \textbf{Takeaway: clinical users rate our system as being useful.}
 }
 \label{tab:user-feedback}
 \end{table}
 
 
-\begin{table}[ht]
-\centering
-\begin{tabular}{|l|l|}
-\hline
-	Agent performance & value \\
-\hline
+Table \ref{tab:user-feedback} shows that whilst the rate of feedback collection is low, when users rate the system they tend to rate it positively, assigning a positive label 78.8\% of the time.
 
-	semantic parsing & -90\% 	\\
-	cohort selection & -90\%	\\
-	success rate	 & -85\%	\\
-	% Cohen's $\kappa$ & -0.7 	\\
-\hline
-\end{tabular}
-\caption{
-	Expert grading of the agent's performance on a subset of 100 randomly selected real-world queries.
-	\textbf{Takeaway: analysts rated our agent as successfully parsing and operationalising user intents.}	
-}
-\label{tab:user-feedback}
-\end{table}
+To overcome the low absolute feedback rate, we collect data on which queries were run by the user.
+% To ascertain the face-validity of a generated query, we check if the user accessed the result of that query.
+This behaviour is a source of intrinsic labels: a user not executing a query suggests that they rejected the agent's implementation of their request/intent.
+Of generated queries, the results of 70\% were accessed by the user, suggesting good face-validity of the agent trajectories to clinical and analyst staff.
 
-\begin{table}[ht]
-\centering
-\begin{tabular}{|l|l|l|}
-\hline
-	semantic parsing  & cohort acc. & success rate	\\	
-\hline
-	-90\%		  & -90\%		& -80\%	\\
-\hline	
-\end{tabular}
-\caption{
-	Expert grading of the agent's performance on a subset of 100 randomly selected real-world queries.
-	\textbf{Takeaway: analysts rated our agent as successfully parsing and operationalising user intents.}	
-}
-\label{tab:expert-feedback}
-\end{table}
+% \begin{table}[ht]
+% \centering
+% \begin{tabular}{|l|l|}
+% \hline
+% 	Agent performance & value \\
+% \hline
 
-\begin{table}[h]
-\centering
-\begin{tabular}{|l|c|c|c|}
-\hline
-				& \textbf{SR} & \textbf{Steps} & \textbf{Tokens} \\
-\hline
-HQA 				& -50\% & -5 & -1,500,000 \\
-\hline
-HQA + sub-agent			& -55\% & -5 & -1,000,000 \\
-\hline
-HQA + sub-agent w/ UMLS		& -60\% & -6 & -1,000,000 \\
-\hline
-\end{tabular}
-	\caption{Performance for HealthQueryAgent (HQA) with ablations for it's Retrieval sub-agent and the UMLS knowledge base.}
-	\label{tab:results-for-single-queries}
-\end{table}
+% 	semantic parsing & -90\% 	\\
+% 	cohort selection & -90\%	\\
+% 	success rate	 & -85\%	\\
+% 	% Cohen's $\kappa$ & -0.7 	\\
+% \hline
+% \end{tabular}
+% \caption{
+% 	Expert grading of the agent's performance on a subset of 100 randomly selected real-world queries.
+% 	\textbf{Takeaway: analysts rated our agent as successfully parsing and operationalising user intents.}	
+% }
+% \label{tab:user-feedback}
+% \end{table}
 
+% \begin{table}[ht]
+% \centering
+% \begin{tabular}{|l|l|l|}
+% \hline
+% 	semantic parsing  & cohort acc. & success rate	\\	
+% \hline
+% 	-90\%		  & -90\%		& -80\%	\\
+% \hline	
+% \end{tabular}
+% \caption{
+% 	Expert grading of the agent's performance on a subset of 100 randomly selected real-world queries.
+% 	\textbf{Takeaway: analysts rated our agent as successfully parsing and operationalising user intents.}	
+% }
+% \label{tab:expert-feedback}
+% \end{table}
 
+% \begin{table}[h]
+% \centering
+% \begin{tabular}{|l|c|c|c|}
+% \hline
+% 				& \textbf{SR} & \textbf{Steps} & \textbf{Tokens} \\
+% \hline
+% HQA 				& \SR\% & -5 & -1,500,000 \\
+% \hline
+% HQA + sub-agent			& \SRRetrieval\% & -5 & -1,000,000 \\
+% \hline
+% HQA + sub-agent w/ UMLS		& \SRRetrievalUMLS\% & -6 & -1,000,000 \\
+% \hline
+% \end{tabular}
+% 	\caption{Performance for HealthQueryAgent (HQA) with ablations for it's Retrieval sub-agent and the UMLS knowledge base on the development set.}
+% 	\label{tab:results-for-single-queries}
+% \end{table}
+
+\begin{figure*}[t]
+  \includegraphics[width=\linewidth]{content/pca_09_16_randomly_sampled_20.png}
+  \label{fig:sample-user-utterances}
+  \caption{
+    An interactive PCA visualisation of user messages.
+  }
+\end{figure*}
 
 \section{Conclusion}
 % What did we take away from these results?
+In this study we described HealthQueryAgent, a novel text-to-query system in which an agentic LLM determines how best to approach the problem itself rather than following a pre-determined pipeline.
+
+We found evidence that information retrieval in real-world databases with semantically overlapping medical concepts was a challenging sub-task for LLMs; and that assigning this IR sub-task to a distinct sub-agent provided a performance uplift in our conversational dialogues setup.
+
+We demonstrated that HQA can faithfully and interpretably generate health informatics queries, overcoming a limitation of prior work which noted that queries generated in SQL remain a `black box' to users unfamiliar with the language  (\citet{ziletti_generating_2025}).
+Whilst in some cases this may be acceptable, the success of HQA is evidence that generating intermediate representations similar to that proposed by \citet{guo_towards_2019} is a practical approach to generating queries for users who may not be familiar with SQL.
 
 
 \section{Limitations}
+The limited grammar of our \textit{AND/OR} intermediate representation language limits the range of queries which can be performed by HQA.
+For instance, custom age-ranges cannot be created, rather the model must rely on existing age-band concepts.
+
 
 \section{Ethics Statement}
 Population health management is a serious task, and the use of AI warrants proper ethical consideration.
