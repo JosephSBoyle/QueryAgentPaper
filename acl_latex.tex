@@ -1,6 +1,5 @@
 \documentclass[11pt]{article}
 
-
 % custom packages: %
 
 \usepackage[dvipsnames]{xcolor}
@@ -12,6 +11,7 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes, arrows.meta, positioning, fit}
 
+\usepackage{booktabs}
 
 %%%%%%%%%%%%%%%%%%%%
 
@@ -175,7 +175,7 @@ We make the following three contributions:
 
 \begin{enumerate}
 
-\item \textbf{1:} We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
+\item We demonstrate that it is possible to automate the mapping from a clinical question to a clinically useful result. Formally, given a clinical user's question $Q$ and a database of patients, medical concepts (codes) and code occurrences (events) $DB$,
 
   $$ DB = (patients, concepts, events) $$
 
@@ -183,9 +183,9 @@ we construct a system, $M$, which maps unseen user questions to a useful answer 
 
   $$ M(DB): \mathcal{Q} \rightarrow \mathcal{A} $$
 
-\item \textbf{2:} We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
+\item We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
 
-\item \textbf{3:}  We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
+\item We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
 \end{enumerate}
 
 % Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
@@ -242,7 +242,7 @@ We experiment with a sub-agent for retrieving the correct concepts, a divide and
 This simple task decomposition reduces the context poisoning which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back relevant entities, instead of the many hundred concepts returned by lexical search (`diabetes' returns 407 concepts, for instance).
 
 We demonstrate that this improves agent success rate (SR), particularly in complex multi-turn conversations in which the context contains a lot of information.
-We hypothesise that this is due to the irrelevant entities `distracting' the model via the attention mechanism, a hypothesis we provide evidence for through the inspection of attention-weights. % Is attention weight given to incorrect entities at the expense of correct ones!? Find out.
+% We hypothesise that this is due to the irrelevant entities `distracting' the model via the attention mechanism, a hypothesis we provide evidence for through the inspection of attention-weights. % Is attention weight given to incorrect entities at the expense of correct ones!? Find out.
 
 % We elect to use a lexical AIR approach, eschewing the complexity of creating and maintaining a semantic index of medical concepts.
 
@@ -459,7 +459,7 @@ To ensure that no confidential data can be accessed by the agent, we create a se
 Our framework is agnostic to the choice of LLM. We choose to evaluate using Gemini 2.5 Flash \citet{comanici_gemini_2025}, as Gemini 2.0 was identified as being the best-performing model in the closest prior art \citet{ziletti_generating_2025}.
 Due to the iterative nature of prompt-development, we believe that our system and tool prompts are biased towards this model in a way that would make comparison to other models misleading, and so we report metrics only for Gemini 2.5 Flash.
 
-We run a real-world evaluation using 2.5 Flash in a zero-shot setup with `medium' thinking enabled, allowing the agent to reflect on the state of the conversation before generating it's utterance (text) and actions (tool-calls).
+We run a real-world evaluation in a dialogue based deployment of HQA, using 2.5 Flash in a zero-shot setup with `medium' thinking enabled, allowing the agent to reflect on the state of the conversation before generating it's utterance (text) and actions (tool-calls). A sample of 20 user requests are shown in Figure \ref{fig:sample-user-utterances}.
 
 \subsection*{Can we automatically map clinical questions to queries?}
 
@@ -487,20 +487,35 @@ Our results are divided into two sections: one from our real-world user evaluati
 % (descriptive) What did our experiments show?
 
 \subsection{Cohort Query Evaluation}
-\begin{table}[h]
-\begin{tabular}{|l|l|l|l|l|}
+
+\begin{table*}[t]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lccccccc}
 \hline
-                            &    EX.    & Rec.  & Prec. & F1\\ 
+ & \multicolumn{2}{c}{Accuracy} & \multicolumn{4}{c}{Patient} & \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-7}
+
+Standard & EX. & Semantic parsing & recall & precision &F1-score & Jaccard & Avg. Token use \\
 \hline
-\textbf{HQA}                &   56.7\% &       &       &   \\
-\textbf{+IR-Agent}          &   56.4\% &       &       &   \\
-% \textbf{+UMLS}              &          &       &       &   \\
+\textsc{HQA} & 66.67 & 0.92 & 0.80 & 0.78 & 0.77 & 0.74 & 30,053 \\
+\textsc{HQA+IR Agent} & 41.67 & 0.88 & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
+\textsc{HQA+IR Agent + UMLS} & & tbc. -> & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
 \hline
-\end{tabular}
+% \textsc{HQA+IR Agent + UMLS} & 85.00 & 0.770 & 0.745 & 0.757 & 0.662 & 5.2M \\
+% \hline
+\multicolumn{8}{l}{Sequential} \\
+\hline
+\textsc{HQA} & 76.92 & 100.00 & 0.98 & 0.94 & 0.95 & 0.93 & 682,546 \\
+% \textsc{HQA+IR Agent} & 41.67 & 0.88 & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
+% \textsc{HQA+IR Agent + UMLS} & & tbc. -> & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
+
+\end{tabular}}
 \caption{
-    HealthQueryAgent's (HQA) performance on public cohort questions published in \citet{ziletti_generating_2025}, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. Performance is determined relative to a pre-determined reference answer created by a professional analyst. EX. = Execution accuracy (exact match); F1 = F1 score.
+    HealthQueryAgent's (HQA) performance on epidemiological cohort questions published in \citet{ziletti_generating_2025}, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. Performance is measured relative to a reference answer created by a professional analyst. EX. = Execution accuracy (exact match).
 }
-\end{table}
+\label{tab:results}
+\end{table*}
 
 
 \subsection{Real World User Evaluation}
@@ -618,10 +633,10 @@ Of generated queries, the results of 70\% were accessed by the user, suggesting 
 
 \begin{figure*}[t]
   \includegraphics[width=\linewidth]{content/pca_09_16_randomly_sampled_20.png}
-  \label{fig:sample-user-utterances}
   \caption{
     An interactive PCA visualisation of user messages.
   }
+  \label{fig:sample-user-utterances}
 \end{figure*}
 
 \section{Conclusion}
