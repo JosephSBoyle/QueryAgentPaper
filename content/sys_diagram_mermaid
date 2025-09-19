@@ -1,0 +1,35 @@
+graph TD
+    subgraph "User Interaction"
+        User -- "Sends message via UI" --> A[static/chat.html]
+    end
+
+    subgraph "Backend Application (Quart)"
+        A -- "POST /api/stream_messages" --> B(app.py)
+    end
+
+    subgraph "Core Agent Logic"
+        B -- "Gets/Creates Agent for session" --> C[navigator/registry.py]
+        C -- "Provides" --> D[navigator/navigator_agent.py]
+        D -- "Uses Tools" --> E[tools/]
+        D -- "Accesses Data" --> F[data_external/]
+    end
+
+    subgraph "Data & External Services"
+        F -- "Queries" --> G((Database))
+    end
+
+    subgraph "Response Generation"
+        E -- "Generates URL" --> D
+        D -- "Streams Response" --> B
+        B -- "HTTP Response" --> A
+        A -- "Displays URL to User" --> User
+    end
+
+    style User fill:#f9f,stroke:#333,stroke-width:2px
+    style A fill:#bbf,stroke:#333,stroke-width:2px
+    style B fill:#ccf,stroke:#333,stroke-width:2px
+    style C fill:#dfd,stroke:#333,stroke-width:2px
+    style D fill:#dfd,stroke:#333,stroke-width:2px
+    style E fill:#fdd,stroke:#333,stroke-width:2px
+    style F fill:#fdd,stroke:#333,stroke-width:2px
+    style G fill:#fcf,stroke:#333,stroke-width:2px

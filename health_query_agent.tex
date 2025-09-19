@@ -52,7 +52,7 @@
 %
 % and set <dim> to something 5cm or larger.
 
-\title{HealthQueryAgent: a task oriented dialogue system for Automated Clinical Informatics}
+\title{HealthQueryAgent: A Task-Oriented Dialogue System for Automated Clinical Informatics}
 
 
 % Author information can be set in various styles:
@@ -159,12 +159,11 @@ Healthcare organisations collect vast quantities of healthcare data, however at 
 
 % Ensure this is rendered on page 2.
 
-
-\begin{figure*}[t]
-  \includegraphics[width=\linewidth]{content/system_diagram3.png}
-	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify its results or asking follow up questions.}
-	\label{fig:system-diagram}
-\end{figure*}
+% \begin{figure*}[t]
+%   \includegraphics[width=\linewidth]{content/system_diagram3.png}
+% 	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify its results or asking follow up questions.}
+% 	\label{fig:system-diagram}
+% \end{figure*}
 
 
 % Formulation
@@ -213,7 +212,7 @@ been demonstrated to \cite{kwa_measuring_2025}.
 Similar to SimpleTOD executing database commands based on autoregressive modelling of the user's belief state, state-of-the-art agents issue what's known as `tools-calls' through autoregressive language modelling. This is referred to as the `ReACT' paradigm, after the seminal paper from \citet{yao_reac_2023} which popularised the approach. To conclude, LLM agents are a new and powerful approach to goal-oriented dialogue systems, in which the agent can autonomously and iteratively interact with it's environment in order to accomplish the user's goals.
 
 
-\subsection{Agentic Information Retrieval}
+\subsection{Agentic Information Retrieval (IR)}
 Agentic IR (AIR) is a new paradigm in which language models iteratively interact with the environment in the `ReAct' loop to retrieve information \citet{zhang_agentic_2025}.
 The key of an agentic approach to IR over a traditional one is the ability to adapt their search as information is collected.
 %This makes the agentic approach more robust to various linguistic phenomena.
@@ -222,10 +221,28 @@ Agentic IR methods are a rapid area of development, with successful systems empl
 For instance, the current SOTA coding agent, Claude Code, uses only a lexical search function, akin to UNIX's `grep' tool to retrieve files, whilst Windsurf, a popular agentic coding IDE, uses a more complex system involving embeddings. We categorise these two approaches into \textbf{lexical} and \textbf{semantic} approaches to agentic-IR.
 
 \subsection{Medical Code and Concept Retrieval}
+
+\textbf{Medical codes} are digital ways of representing events or findings in the real world. A medical code might represent a diagnosis, such as diabetes type II, a laboratory finding or test result, or something more abstract, such as admission to hospital.
+
+\textbf{Concepts} are abstractions of codes, aggregated at a lower level of granularity so as to be practically useful in informatics applications.
+For instance, to answer the question `who in my practice has diabetes II?', we must have some `concept' of the codes which signify diabetes II. Table \ref{tab:concept-as-multi-vocab-codelist} shows four codes belonging to the diabetes II concept.
+% \footnote{NB: SNOMED-CT refers to its codes as `concepts'.}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{c|c}
+         Concept & Diabetes II \\
+         \hline
+         ICD-10 & E11.0, E11.1, ... \\
+         SNOMED-CT & 44054006, 4130162, ...\\
+    \end{tabular}
+    \caption{Example medical \textit{codes} from the two most common vocabularies used in current medical practice, ICD-10 and SNOMED-CT, for the \textit{concept} Diabetes type II \cite{world_health_organization_icd-10_2004, bhattacharyya_introduction_2015}.}
+    \label{tab:concept-as-multi-vocab-codelist}
+\end{table}
+
+
 Prior art for retrieving medical codes has tended to use non-agentic, retrieval pipelines based on semantic similarity \citet{baksi_medcoder_2024, ziletti_retrieval_2024}.
-These systems operate at the level of medical codes, such as ICD-10 codes and their descriptions, whereas our system operates at a level higher: using internally defined `concepts'
-	\footnote{NB: the popular medical vocabulary SNOMED-CT refers to its codes as `concepts'.}
-representing logical compositions of codes, such as `Cirrhosis and no liver transplant'.
+These systems operate at the level of medical codes, such as ICD-10 codes and their descriptions, whereas our system operates at a level higher: using internally defined `concepts' representing logical compositions of codes, such as `Cirrhosis and no liver transplant'.
 These concepts are used to select cohorts of patients matching their criteria.
 
 \textbf{Concept retrieval} is a critical sub-task upon which generating successful queries depends.
@@ -459,7 +476,7 @@ To ensure that no confidential data can be accessed by the agent, we create a se
 Our framework is agnostic to the choice of LLM. We choose to evaluate using Gemini 2.5 Flash \citet{comanici_gemini_2025}, as Gemini 2.0 was identified as being the best-performing model in the closest prior art \citet{ziletti_generating_2025}.
 Due to the iterative nature of prompt-development, we believe that our system and tool prompts are biased towards this model in a way that would make comparison to other models misleading, and so we report metrics only for Gemini 2.5 Flash.
 
-We run a real-world evaluation in a dialogue based deployment of HQA, using 2.5 Flash in a zero-shot setup with `medium' thinking enabled, allowing the agent to reflect on the state of the conversation before generating it's utterance (text) and actions (tool-calls). A sample of 20 user requests are shown in Figure \ref{fig:sample-user-utterances}.
+We run a real-world evaluation in a dialogue based deployment of HQA, using 2.5 Flash in a zero-shot setup with `medium' thinking enabled, allowing the agent to reflect on the state of the conversation before generating it's utterance (text) and actions (tool-calls). A sample of 20 user requests are shown in Figure \ref{fig:sample-user-utterances}. We use a token limit of 128,000, approximately 183,000 words (token=0.7 words); a number which was chosen based on alpha-testing of the system.
 
 \subsection*{Can we automatically map clinical questions to queries?}
 
@@ -488,6 +505,8 @@ Our results are divided into two sections: one from our real-world user evaluati
 
 \subsection{Cohort Query Evaluation}
 
+\include{results_ziletti}
+
 \begin{table*}[t]
 \centering
 \resizebox{\textwidth}{!}{
@@ -498,15 +517,19 @@ Our results are divided into two sections: one from our real-world user evaluati
 
 Standard & EX. & Semantic parsing & recall & precision &F1-score & Jaccard & Avg. Token use \\
 \hline
-\textsc{HQA} & 66.67 & 0.92 & 0.80 & 0.78 & 0.77 & 0.74 & 30,053 \\
-\textsc{HQA+IR Agent} & 41.67 & 0.88 & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
-\textsc{HQA+IR Agent + UMLS} & & tbc. -> & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
+
+\textsc{HQA} & \Accuracy{} (\Passed{} / \Total{}) & \textbf{\Semanticparsingjaccardscore} & \textbf{\Recall} & \Precision & \Fscore & \Jaccardscore & \Tokensmean \\
+
+\textsc{+ IR Agent} & \irAccuracy{} (\irPassed{} / \irTotal{}) & \textbf{\irSemanticparsingjaccardscore} & \irRecall & \textbf{\irPrecision} & \irFscore & \irJaccardscore & \irTokensmean \\
+
+\textsc{+ IR Agent w/ UMLS} & \textbf{\IRumlsAccuracy{} (\IRumlsPassed{} / \IRumlsTotal{})} & \IRumlsSemanticparsingjaccardscore & \IRumlsRecall & \IRumlsPrecision & \IRumlsFscore & \textbf{\IRumlsJaccardscore} & \textbf{\IRumlsTokensmean} \\
 \hline
-% \textsc{HQA+IR Agent + UMLS} & 85.00 & 0.770 & 0.745 & 0.757 & 0.662 & 5.2M \\
-% \hline
+
 \multicolumn{8}{l}{Sequential} \\
 \hline
-\textsc{HQA} & 76.92 & 100.00 & 0.98 & 0.94 & 0.95 & 0.93 & 682,546 \\
+\textsc{HQA} & \sAccuracy{} (\sPassed{} / \sTotal{}) & \sSemanticparsingjaccardscore & \sRecall & \sPrecision & \sFscore & \sJaccardscore & \sTokensmean \\
+\textsc{+IR Agent} & \sirAccuracy{} (\sirPassed{} / \sirTotal{}) & \sirSemanticparsingjaccardscore & \sirRecall & \sirPrecision & \sirFscore & \sirJaccardscore & \sirTokensmean \\
+\hline
 % \textsc{HQA+IR Agent} & 41.67 & 0.88 & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
 % \textsc{HQA+IR Agent + UMLS} & & tbc. -> & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
 
