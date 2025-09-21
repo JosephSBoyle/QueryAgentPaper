@@ -52,7 +52,7 @@
 %
 % and set <dim> to something 5cm or larger.
 
-\title{HealthQueryAgent: A Task-Oriented Dialogue System for Automated Clinical Informatics}
+\title{QueryAgent: A Task-Oriented Dialogue System for Automated Clinical Informatics}
 
 
 % Author information can be set in various styles:
@@ -124,17 +124,26 @@
 
 % load results values
 \include{results_development}
+\include{results_ziletti}
 
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textbf{HealthQueryAgent,} a Task-Oriented Dialogue (TOD) for performing population health management operations. We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients. We evaluate the agent's capacity to autonomously handle a range of health informatics tasks.
+In this paper we describe \textsc{QueryAgent,} a Task-Oriented Dialogue system for performing population health management operations.
+We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients.
+We evaluate the agent's capacity to autonomously handle a range of health informatics tasks on an existing epidemiological question benchmark and through a real-world user evaluation.
+
+Our results suggest that there is broad potential for AI assistants to augment the ability of clinicians to generate actionable information
+from patient health records.
+% can act as clinical copilots, aiding users in performing specialist tasks (database querying) in a way that maintains transparency.
+
 % We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
 
 % Analysing healthcare data can be an arduous and error-prone task when done manually. 
-The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
 % Three examples are: listing patients who meet some criteria; calculating the rate of a condition within a subpopulation; and measuring the performance of their organisation according to some metrics.
-Specialist analysts are needed to translate clinical queries into database ones, imposing a steep cost and introducing a considerable delay. We hypothesise a system for automatically performing this translation in an interpretable fashion could drastically reduce both the cost and the latency to performing population health analysis, and enable clinicians to rapidly generate actionable knowledge from clinical data.
+
+% The aim of population health analysis is for a user to generate some knowledge from a database by conducting a database query to access information regarding a set of specified patients. 
+%Specialist analysts are needed to translate clinical queries into database ones, imposing a steep cost and introducing a considerable delay. We hypothesise a system for automatically performing this translation in an interpretable fashion could drastically reduce both the cost and the latency to performing population health analysis, and enable clinicians to rapidly generate actionable knowledge from clinical data.
 
 % This document is a supplement to the general instructions for *ACL authors. It contains instructions for using the \LaTeX{} style files for ACL conferences.
 % The document itself conforms to its own specifications, and is therefore an example of what your manuscript should look like.
@@ -145,9 +154,9 @@ Specialist analysts are needed to translate clinical queries into database ones,
 \centering
 \includestandalone{figure\_one}
 \caption{
-HealthQueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
+QueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
 The data environment comprises a local database of analyst-created medical concepts, and an open-access knowledge-base, UMLS, which is used to help ground the agent faithfully map clinical surface forms (e.g. `ddC') to local concepts, a process which involves multi-step information retrieval.
-HealthQueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that it can focus on \textit{composing} the database query.}
+QueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that it can focus on creating the database query.}
 \label{fig:question-to-query}
 
 \end{figure}
@@ -155,13 +164,16 @@ HealthQueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so 
 \section{Introduction}
 
 % focus has been elsewhere
-Healthcare organisations collect vast quantities of healthcare data, however at present it would be difficult to argue that this data is used to it's \textit{full potential}. Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information: leaving large population health benefits `on the table' so to speak.
+Healthcare organisations collect large quantities of healthcare data, which clinicians can use to proactively manage the needs of their patients.
+The ability to interrogate recorded healthcare data to generate answers is a limiting factor in the proactive management of population health.
+
+Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information: leaving large population health benefits `on the table' so to speak.
 
 % Ensure this is rendered on page 2.
 
 % \begin{figure*}[t]
 %   \includegraphics[width=\linewidth]{content/system_diagram3.png}
-% 	\caption{System diagram showing a subset of HealthQueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify its results or asking follow up questions.}
+% 	\caption{System diagram showing a subset of QueryAgent's tools. The agent must enact multi-step plans using a concept database and a medical knowledge base to create an analysis query, which is then passed to the user who will be able to view the retrieved results. To ensure privacy, the agent's tools cannot access the Patient EHR database. The user may interactively refine the query by conversing with the agent, for instance prompting it to modify its results or asking follow up questions.}
 % 	\label{fig:system-diagram}
 % \end{figure*}
 
@@ -220,12 +232,14 @@ The key of an agentic approach to IR over a traditional one is the ability to ad
 Agentic IR methods are a rapid area of development, with successful systems employing a variety of different tools for agents to IR.
 For instance, the current SOTA coding agent, Claude Code, uses only a lexical search function, akin to UNIX's `grep' tool to retrieve files, whilst Windsurf, a popular agentic coding IDE, uses a more complex system involving embeddings. We categorise these two approaches into \textbf{lexical} and \textbf{semantic} approaches to agentic-IR.
 
-\subsection{Medical Code and Concept Retrieval}
+\subsection{Medical Codes and Concepts}
 
-\textbf{Medical codes} are digital ways of representing events or findings in the real world. A medical code might represent a diagnosis, such as diabetes type II, a laboratory finding or test result, or something more abstract, such as admission to hospital.
+\textbf{Codes} are digital ways of representing events or findings in the real world. A medical code might represent a diagnosis, such as diabetes type II, a laboratory finding or test result, or something more abstract, such as admission to hospital.
 
-\textbf{Concepts} are abstractions of codes, aggregated at a lower level of granularity so as to be practically useful in informatics applications.
-For instance, to answer the question `who in my practice has diabetes II?', we must have some `concept' of the codes which signify diabetes II. Table \ref{tab:concept-as-multi-vocab-codelist} shows four codes belonging to the diabetes II concept.
+\textbf{Concepts} are abstractions of codes, aggregated at a coarser level of granularity so as to be practically useful in informatics applications.
+For instance, to answer the question `who in my practice has diabetes II?', we must have some `concept' of the many codes which indicate diabetes II. Table \ref{tab:concept-as-multi-vocab-codelist} shows four codes belonging to the diabetes II concept.
+% Unlike codes vocabularies which are developed and maintained by a central body- such as the WHO for ICD-10- concepts are often developed in-house.
+
 % \footnote{NB: SNOMED-CT refers to its codes as `concepts'.}
 
 \begin{table}[h]
@@ -246,7 +260,7 @@ These systems operate at the level of medical codes, such as ICD-10 codes and th
 These concepts are used to select cohorts of patients matching their criteria.
 
 \textbf{Concept retrieval} is a critical sub-task upon which generating successful queries depends.
-Retrieving appropriate concepts is more challenging than retrieving medical codes, since - unlike codes - we cannot rely on the LLM to have learnt concept names during the pre-training phase.
+Retrieving appropriate concepts is more challenging than retrieving medical codes, since unlike codes we cannot rely on the LLM to have learnt concept names during the pre-training phase.
 %Indeed concept names often require substantial local knowledge to understand.
 % DIFFERENCES TO MEDICAL CODING:
 %Mapping utterances to concepts requires handling of polysemy, synonymy, metonymy, and (overloaded) abbreviations, as well as local knowledge on naming conventions. Due to this complexity, 
@@ -272,22 +286,23 @@ We demonstrate that this improves agent success rate (SR), particularly in compl
 Health informatics is an interdisciplinary field at the intersection of data analytics and medicine, and entails improving the health outcomes through the broad use of clinical data. Informatics tasks include: writing database queries to select cohorts of patients meeting certain criteria, measuring the performance of interventions, and developing tools for clinicians to better access data. 
 
 % EHR
-The data used in healthcare informatics is stored in electronic healthcare records (EHR). Personal EHR are a rich store of information, often containing thousands of recorded medical codes dating back to a persons's birth. These records are used to great effect in large health organisations such as the NHS, where this data enables clinicians to proactively identify people's needs and to provide targeted interventions, through the use of digital clinical decision support systems (CDSS).
+The data used in healthcare informatics is stored in electronic healthcare records (EHR). Personal EHR are a rich store of information, often containing thousands of recorded medical codes dating back to a person's birth. These records are used to great effect in large health organisations such as the NHS, where this data enables clinicians to proactively identify people's needs and to provide targeted interventions, through the use of digital clinical decision support systems (CDSS).
 
 
 % Recent developments in data 
-The quality of the recorded data has improved dramatically due to various incentive structures put in place, such as the mandate that providers and hospitals in the United States must exhibit `meaningful use' of the EHR in order to be eligible for Medicare and Medicaid funding, which has been fully in effect since 2016\footnote{https://www.healthit.gov/faq/what-meaningful-use}. In the UK similar incentives for good medical coding exist, with additional funds allocated to reimburse organisations which handle more complex cases, conditional on the diagnoses and procedures being properly coded.
+%The quality of the recorded data has improved dramatically due to various incentive structures put in place, such as the mandate that providers and hospitals in the United States must exhibit `meaningful use' of the EHR in order to be eligible for Medicare and Medicaid funding, which has been fully in effect since 2016\footnote{https://www.healthit.gov/faq/what-meaningful-use}. In the UK similar incentives for good medical coding exist, with additional funds allocated to reimburse organisations which handle more complex cases, conditional on the diagnoses and procedures being properly coded.
 
 % todo graphic of the EHR?
 
 % Epidemiology
-The ability of public health institutions to identify and respond to emergencies depends on their ability to aggregate and interpret information about the situation on the ground. Whilst digital records simplify the aggregation of said information, creating the correct database queries to analyse the data often requires the assistance of programmers, as CDSS tools typically provide limited analysis capabilities.
+%The ability of public health institutions to identify and respond to emergencies depends on their ability to aggregate and interpret information about the situation on the ground. Whilst digital records simplify the aggregation of said information, creating the correct database queries to analyse the data often requires the assistance of programmers, as CDSS tools typically provide limited analysis capabilities.
 
 
 % TODO diagram of cohort selection (it's just a 2D space!) -- ref. the 3B1B video on Bayes' theorem.
 
-We describe \textbf{HealthQueryAgent}, an agentic, task-oriented-dialogue (TOD) system for generating interpretable medical database queries using generative language models. We demonstrate the utility of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by members of both the clinical and analyst staff.
-In our beta deployment, we present HealthQueryAgent via a chat interface embedded into an existing web platform for population health management, enabling the clinician to collaborate with the agent to refine the analysis. % todo: hard to parse the last sentence.
+\subsection{\textsc{QueryAgent}}
+We describe QueryAgent, an agentic, task-oriented-dialogue (TOD) system for generating interpretable medical database queries using generative language models. We demonstrate the utility of this system through a beta deployment in NHS Nottingham and Nottinghamshire, where the system is used by members of both the clinical and analyst staff.
+In our beta deployment, we present QueryAgent via a chat interface embedded into an existing web platform for population health management, enabling the clinician to collaborate with the agent to refine the analysis. % todo: hard to parse the last sentence.
 
 % Interpretability
 For the results of an automated querying system to be actionable, they must first be interpretable. Specifically, generated database queries must be understandable to the user; whilst SQL is ubiquitous amongst analysts, clinicians will struggle to verify that an SQL query is correctly expressing their intent. To work around this limitation, we limit cohort selection queries (the predominant type of query) to a subset which can be expressed using a composition of only three logical operations: \texttt{AND, OR, AND NOT}. For clinician facing CDSS the tradeoff of expressivity for interpretability could be worthwile compared to text-to-SQL based systems, whose queries cannot be easily verified by non-programmers.
@@ -296,16 +311,16 @@ For the results of an automated querying system to be actionable, they must firs
 
  %clinicians can understand the underlying logic; something which is arguably not possible with text-to-sql pipelines used in other systems in the literature. We address this by expressing queries using a simple intermediate representation (IR) consisting of three first-order logic operations: \texttt{AND,OR,NOT} as well as the concept of a fraction. This IR is programmatically mapped to an SQL query and provides a simple mechanism for non-programmers to ensure that the query is logically correct- a key requirement for actionable analyses.
 
-% Local context
-In the context of the UK, where this study takes place, our National Health Service has announced three major shifts in it's operations\footnote{https://www.england.nhs.uk/digitaltechnology/the-single-patient-record/}:
+%% Local context
+% In the context of the UK, where this study takes place, the NHS has announced three major shifts in it's operations\footnote{https://www.england.nhs.uk/digitaltechnology/the-single-patient-record/}:
 
-\begin{enumerate}
-	\item hospital to community
-	\item sickness to prevention
-	\item analogue to digital
-\end{enumerate}
+%\begin{enumerate}
+%	\item hospital to community
+%	\item sickness to prevention
+%	\item analogue to digital
+%\end{enumerate}
 
-HealthQueryAgent fits squarely within these aims. By enabling primary (community) care physicians to proactively pin-point people who need assistance, the burden can be shifted away from expensive secondary care services (hospitals / inpatient facilities).
+%QueryAgent fits squarely within these aims. By enabling primary (community) care physicians to proactively pin-point people who need assistance, the burden can be shifted away from expensive secondary care services (hospitals / inpatient facilities).
 
 \section{Related Work}
 
@@ -320,7 +335,7 @@ In this work, we generate an SQL query by first generating an intermediate repre
 
 \begin{figure}[t]
   \includegraphics[width=0.9\columnwidth]{content/flow_diagram.PNG}
-	\caption{The flow of information in a dialogue with HealthQueryAgent (HQA). The agent generates database queries in a way which preserves privacy by design: no patient data ever leaves the secure environment, only medical concepts and other information required to \textit{construct} database queries.} 
+	\caption{The flow of information in a dialogue with QueryAgent (QA). The agent generates database queries in a way which preserves privacy by design: no patient data ever leaves the secure environment, only medical concepts and other information required to \textit{construct} database queries.} 
   \label{fig:flow-diagram}
 \end{figure}
 
@@ -328,12 +343,12 @@ In this work, we generate an SQL query by first generating an intermediate repre
 \section{Method}
 % A method is like a recipe.
 
-HealthQueryAgent is an LLM based, end-to-end task-oriented dialogue system.
+QueryAgent is an LLM based, end-to-end task-oriented dialogue system.
 In this section, we describe it's components and how they integrate.
 
 % \subsection{Automated testing} ...
 \subsection{Retrieval Sub-Agent}
-Identifying the appropriate medical concepts in a real-world clinical database is a challenging sub-task within HealthQueryAgent's workflows.
+Identifying the appropriate medical concepts in a real-world clinical database is a challenging sub-task within QueryAgent's workflows.
 The task involves elements of semantic parsing and disambiguation, handling of polysemy, synonymy, metonymy, and abbreviations, as well as local knowledge on naming conventions.
 
 The retrieval sub-agent is prompted to identify the top-$k$ most relevant concepts for a given NL expression, using two tools, one for searching concepts, and one for returning concepts by their IDs.
@@ -403,8 +418,8 @@ for.
 
 \subsubsection{Create Patient Cohort}
 % todo
-Creating select queries for cohorts of patients is a key function of HQA.
-An example of a question requiring the user to create a cohort is shown in Figure \ref{fig:question-to-query}.:/
+Creating select queries for cohorts of patients is a key function of QA.
+An example of a question requiring the user to create a cohort is shown in Figure \ref{fig:question-to-query}.
 Much of the effort in optimising it's tools and abilities has been devoted to improving it's performance on this task.
 
 %\enquote{
@@ -421,46 +436,46 @@ Much of the effort in optimising it's tools and abilities has been devoted to im
 
 
 
-\begin{table}[t]
-\centering
-	\begin{tabular}{|p{2cm}|p{5cm}|}
-\hline
-	Entity Type & Sample entities \\
+% \begin{table}[t]
+% \centering
+% 	\begin{tabular}{|p{2cm}|p{5cm}|}
+%\hline
+%	Entity Type & Sample entities \\
 
-\hline
-\hline
-	Concepts 	& \textcolor{orange}{Dementia} \\
-	 	        & \textcolor{red}{Pancreatic Enzyme Replacement Therapy} \\
-			& Diabetes - L12M \\
-			& 2+ hospital admissions L12M \\
-			& Hip fracture \\ 
-\hline
-	Locations	& \textcolor{brown}{Saxon Cross General Practice;}\\	
-			& Nottingham West; \\
-			& Orchard Surgery; \\
-\hline
-	KPIs		& \% of diabetics whose HBa1c is 48mmol/mol or lower; \\
-	 		& \% of medication reviews for those on the end of life register; \\	
-\hline
-	Reports		& \textcolor{blue}{Dementia:} \\
-			& Age | Sex | MoCA score | \\
-			& Frailty: \\
-			& Age | Sex | Barthel independence score | clinical frailty score | history of falls \\
-\hline
-	Statistics	& \textcolor{teal}{Age bands} \\
-			& Diagnoses \\
-			& Admissions \\
-\hline
-\end{tabular}
+%\hline
+%\hline
+%	Concepts 	& \textcolor{orange}{Dementia} \\
+%	 	        & \textcolor{red}{Pancreatic Enzyme Replacement Therapy} \\
+%			& Diabetes - L12M \\
+%			& 2+ hospital admissions L12M \\
+%			& Hip fracture \\ 
+%\hline
+%	Locations	& \textcolor{brown}{Saxon Cross General Practice;}\\	
+%			& Nottingham West; \\
+%			& Orchard Surgery; \\
+%\hline
+%	KPIs		& \% of diabetics whose HBa1c is 48mmol/mol or lower; \\
+%	 		& \% of medication reviews for those on the end of life register; \\	
+%\hline
+%	Reports		& \textcolor{blue}{Dementia:} \\
+%			& Age | Sex | MoCA score | \\
+%			& Frailty: \\
+%			& Age | Sex | Barthel independence score | clinical frailty score | history of falls \\
+%\hline
+%	Statistics	& \textcolor{teal}{Age bands} \\
+%			& Diagnoses \\
+%			& Admissions \\
+%\hline
+%\end{tabular}
 
-\caption{
-	A sample of entities which HealthQueryAgent needs to marshal in order to generate it's answer queries.
-	`L12m' refers to data recorded in the the last 12 months.
-	`HBa1c' is a blood sugar test used to measure the performance of diabetes treatments, the specific value corresponds to the clinical threshold for `well-controlled'.
-%	\textbf{Takeaway}: the agent must retrieve local data to complete it's task.
-}
-	\label{tab:sample-entities}
-\end{table}
+%\caption{
+%	A sample of entities which QueryAgent needs to marshal in order to generate it's answer queries.
+%	`L12m' refers to data recorded in the the last 12 months.
+%	`HBa1c' is a blood sugar test used to measure the performance of diabetes treatments, the specific value corresponds to the clinical threshold for `well-controlled'.
+%%	\textbf{Takeaway}: the agent must retrieve local data to complete it's task.
+%}
+%	\label{tab:sample-entities}
+%\end{table}
 
 
 \subsection{Data Protection} 
@@ -469,14 +484,14 @@ Concepts pertaining to a certain record would be considered confidential informa
 \footnote{Under UK law, the information pertaining to a person is considered confidential even if it is anonymised.
 \url{https://www.digitalregulations.innovation.nhs.uk/regulations-and-guidance-for-developers/all-developers-guidance/proof-of-concept-using-anonymous-or-artificial-health-data/}
 }. 
-To ensure that no confidential data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any tables derived from it; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions, as shown in Figure \ref{fig:system-diagram}.
+To ensure that no confidential data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any tables derived from it; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions when they access the results URL, shown in Figure \ref{fig:question-to-query}.
 
 
 \section{Experimental Setup}
 Our framework is agnostic to the choice of LLM. We choose to evaluate using Gemini 2.5 Flash \citet{comanici_gemini_2025}, as Gemini 2.0 was identified as being the best-performing model in the closest prior art \citet{ziletti_generating_2025}.
 Due to the iterative nature of prompt-development, we believe that our system and tool prompts are biased towards this model in a way that would make comparison to other models misleading, and so we report metrics only for Gemini 2.5 Flash.
 
-We run a real-world evaluation in a dialogue based deployment of HQA, using 2.5 Flash in a zero-shot setup with `medium' thinking enabled, allowing the agent to reflect on the state of the conversation before generating it's utterance (text) and actions (tool-calls). A sample of 20 user requests are shown in Figure \ref{fig:sample-user-utterances}. We use a token limit of 128,000, approximately 183,000 words (token=0.7 words); a number which was chosen based on alpha-testing of the system.
+We run a real-world evaluation in a dialogue based deployment of QA, using 2.5 Flash in a zero-shot setup with `medium' thinking enabled, allowing the agent to reflect on the state of the conversation before generating it's utterance (text) and actions (tool-calls). A sample of 20 user requests are shown in Figure \ref{fig:sample-user-utterances}. We use a token limit of 128,000, approximately 183,000 words (token=0.7 words); a number which was chosen based on alpha-testing of the system.
 
 \subsection*{Can we automatically map clinical questions to queries?}
 
@@ -503,46 +518,8 @@ We compare the model's ability to complete tasks requiring these concepts with a
 Our results are divided into two sections: one from our real-world user evaluation, and one from our evaluation using queries drawn from \citet{ziletti_generating_2025}.
 % (descriptive) What did our experiments show?
 
-\subsection{Cohort Query Evaluation}
-
-\include{results_ziletti}
-
-\begin{table*}[t]
-\centering
-\resizebox{\textwidth}{!}{
-\begin{tabular}{lccccccc}
-\hline
- & \multicolumn{2}{c}{Accuracy} & \multicolumn{4}{c}{Patient} & \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-7}
-
-Standard & EX. & Semantic parsing & recall & precision &F1-score & Jaccard & Avg. Token use \\
-\hline
-
-\textsc{HQA} & \Accuracy{} (\Passed{} / \Total{}) & \textbf{\Semanticparsingjaccardscore} & \textbf{\Recall} & \Precision & \Fscore & \Jaccardscore & \Tokensmean \\
-
-\textsc{+ IR Agent} & \irAccuracy{} (\irPassed{} / \irTotal{}) & \textbf{\irSemanticparsingjaccardscore} & \irRecall & \textbf{\irPrecision} & \irFscore & \irJaccardscore & \irTokensmean \\
-
-\textsc{+ IR Agent w/ UMLS} & \textbf{\IRumlsAccuracy{} (\IRumlsPassed{} / \IRumlsTotal{})} & \IRumlsSemanticparsingjaccardscore & \IRumlsRecall & \IRumlsPrecision & \IRumlsFscore & \textbf{\IRumlsJaccardscore} & \textbf{\IRumlsTokensmean} \\
-\hline
-
-\multicolumn{8}{l}{Sequential} \\
-\hline
-\textsc{HQA} & \sAccuracy{} (\sPassed{} / \sTotal{}) & \sSemanticparsingjaccardscore & \sRecall & \sPrecision & \sFscore & \sJaccardscore & \sTokensmean \\
-\textsc{+IR Agent} & \sirAccuracy{} (\sirPassed{} / \sirTotal{}) & \sirSemanticparsingjaccardscore & \sirRecall & \sirPrecision & \sirFscore & \sirJaccardscore & \sirTokensmean \\
-\hline
-% \textsc{HQA+IR Agent} & 41.67 & 0.88 & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
-% \textsc{HQA+IR Agent + UMLS} & & tbc. -> & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
-
-\end{tabular}}
-\caption{
-    HealthQueryAgent's (HQA) performance on epidemiological cohort questions published in \citet{ziletti_generating_2025}, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. Performance is measured relative to a reference answer created by a professional analyst. EX. = Execution accuracy (exact match).
-}
-\label{tab:results}
-\end{table*}
-
-
 \subsection{Real World User Evaluation}
-This section contains results demonstrating the ability of HealthQueryAgent to answer population health questions in a real-world clinical database environment.
+This section contains results demonstrating the ability of QueryAgent to answer population health questions in a real-world clinical database environment.
 
 \begin{table}[ht]
 \centering
@@ -558,7 +535,7 @@ This section contains results demonstrating the ability of HealthQueryAgent to a
 \hline
 \end{tabular}
 \caption{
-Summary statistics for HealthQueryAgent's conversations.
+Summary statistics for QueryAgent's conversations.
 `Tool' indicates the result of a tool-use, e.g. a database search.
 \textbf{Takeaway: the majority of words in the conversations were tool call results.}
 }
@@ -574,14 +551,14 @@ The number of utterances is a count of discrete messages, e.g. interleaved text 
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{|l|l|l|}
 \hline
-	            & count & absolute  	&  relative \\	
+	            & count &  proportion \\	
 \hline
-	positive 	& 78	& 12.0\%		& 78.8\%	\\
+	positive 	& 78 & 78.8\%	\\
 % \hspace{0.5cm} +text 	& 5	& 0.2		& 0.1 \\
 \hline
-	negative 	& 21 	& 3.2\%      	& 21.2\%\\
+	negative 	& 21 & 21.2\%\\
 % \hspace{0.5cm} +text	& 3	& 0.05		& 0.1	\\
 \hline	
 \end{tabular}
@@ -643,18 +620,58 @@ Of generated queries, the results of 70\% were accessed by the user, suggesting 
 % \hline
 % 				& \textbf{SR} & \textbf{Steps} & \textbf{Tokens} \\
 % \hline
-% HQA 				& \SR\% & -5 & -1,500,000 \\
+% QA 				& \SR\% & -5 & -1,500,000 \\
 % \hline
-% HQA + sub-agent			& \SRRetrieval\% & -5 & -1,000,000 \\
+% QA + sub-agent			& \SRRetrieval\% & -5 & -1,000,000 \\
 % \hline
-% HQA + sub-agent w/ UMLS		& \SRRetrievalUMLS\% & -6 & -1,000,000 \\
+% QA + sub-agent w/ UMLS		& \SRRetrievalUMLS\% & -6 & -1,000,000 \\
 % \hline
 % \end{tabular}
-% 	\caption{Performance for HealthQueryAgent (HQA) with ablations for it's Retrieval sub-agent and the UMLS knowledge base on the development set.}
+% 	\caption{Performance for QueryAgent (QA) with ablations for it's Retrieval sub-agent and the UMLS knowledge base on the development set.}
 % 	\label{tab:results-for-single-queries}
 % \end{table}
 
-\begin{figure*}[t]
+
+\subsection{Cohort Query Evaluation}
+Table \ref{tab:epi-coho-results} shows the performance on the \textit{Epidemiological Cohort} dataset created by \citet{ziletti_generating_2025}, evaluated against reference answers created by an analyst.
+Semantic parsing is measure as the correct interpretation of the question, as measured by the Jaccard index of the given return arguments.
+Patient-level recall is the proportion of the patients in the reference answer cohort who were in the generated cohort; precision is the proportion of patients in the generated cohort who were in the reference cohort; patient F1-score is the harmonic mean of these two measures.
+
+\begin{table*}[ht!]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lccccccc}
+\hline
+ & \multicolumn{2}{c}{Accuracy} & \multicolumn{4}{c}{Patient} & \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-7}
+
+Standard & EX. & Semantic parsing & recall & precision &F1-score & Jaccard & Avg. Token use \\
+\hline
+
+\textsc{QA} & \Accuracy{} (\Passed{} / \Total{}) & \textbf{\Semanticparsingjaccardscore} & \textbf{\Recall} & \Precision & \Fscore & \Jaccardscore & \Tokensmean \\
+
+\textsc{+ IR Agent} & \irAccuracy{} (\irPassed{} / \irTotal{}) & \textbf{\irSemanticparsingjaccardscore} & \irRecall & \textbf{\irPrecision} & \irFscore & \irJaccardscore & \irTokensmean \\
+
+\textsc{+ IR Agent w/ UMLS} & \textbf{\IRumlsAccuracy{} (\IRumlsPassed{} / \IRumlsTotal{})} & \IRumlsSemanticparsingjaccardscore & \IRumlsRecall & \IRumlsPrecision & \IRumlsFscore & \textbf{\IRumlsJaccardscore} & \textbf{\IRumlsTokensmean} \\
+\hline
+
+\multicolumn{8}{l}{Sequential} \\
+\hline
+\textsc{QA} & \sAccuracy{} (\sPassed{} / \sTotal{}) & \sSemanticparsingjaccardscore & \sRecall & \sPrecision & \sFscore & \sJaccardscore & \sTokensmean \\
+\textsc{+IR Agent} & \sirAccuracy{} (\sirPassed{} / \sirTotal{}) & \sirSemanticparsingjaccardscore & \sirRecall & \sirPrecision & \sirFscore & \sirJaccardscore & \sirTokensmean \\
+\hline
+% \textsc{QA+IR Agent} & 41.67 & 0.88 & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
+% \textsc{QA+IR Agent + UMLS} & & tbc. -> & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
+
+\end{tabular}}
+\caption{
+    QueryAgent's (QA) performance on epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. Performance is measured relative to a reference answer created by a professional analyst. EX. = Execution accuracy (exact match).
+}
+\label{tab:epi-coho-results}
+\end{table*}
+
+
+\begin{figure*}[b]
   \includegraphics[width=\linewidth]{content/pca_09_16_randomly_sampled_20.png}
   \caption{
     An interactive PCA visualisation of user messages.
@@ -664,22 +681,21 @@ Of generated queries, the results of 70\% were accessed by the user, suggesting 
 
 \section{Conclusion}
 % What did we take away from these results?
-In this study we described HealthQueryAgent, a novel text-to-query system in which an agentic LLM determines how best to approach the problem itself rather than following a pre-determined pipeline.
+In this study we described QueryAgent, a novel text-to-query system in which an agentic LLM determines how best to approach the problem itself rather than following a pre-determined pipeline.
 
 We found evidence that information retrieval in real-world databases with semantically overlapping medical concepts was a challenging sub-task for LLMs; and that assigning this IR sub-task to a distinct sub-agent provided a performance uplift in our conversational dialogues setup.
 
-We demonstrated that HQA can faithfully and interpretably generate health informatics queries, overcoming a limitation of prior work which noted that queries generated in SQL remain a `black box' to users unfamiliar with the language  (\citet{ziletti_generating_2025}).
-Whilst in some cases this may be acceptable, the success of HQA is evidence that generating intermediate representations similar to that proposed by \citet{guo_towards_2019} is a practical approach to generating queries for users who may not be familiar with SQL.
+We demonstrated that QA can faithfully and interpretably generate health informatics queries, overcoming a limitation of prior work which noted that queries generated in SQL remain a `black box' to users unfamiliar with the language  (\citet{ziletti_generating_2025}).
+Whilst in some cases this may be acceptable, the success of QA is evidence that generating intermediate representations similar to that proposed by \citet{guo_towards_2019} is a practical approach to generating queries for users who may not be familiar with SQL.
 
 
 \section{Limitations}
-The limited grammar of our \textit{AND/OR} intermediate representation language limits the range of queries which can be performed by HQA.
+The limited grammar of our \textit{AND/OR} intermediate representation language limits the range of queries which can be performed by QA.
 For instance, custom age-ranges cannot be created, rather the model must rely on existing age-band concepts.
 
 
 \section{Ethics Statement}
 Population health management is a serious task, and the use of AI warrants proper ethical consideration.
-
 To address the ethical concerns regarding this work, let us consider the mechanisms by which such a system could cause harm.
 
 Since the agent cannot access patient data, we deem the risk of leaking PII to be limited to the uploading of patient information into the dialogue by a user and explicitly warn users at the beginning of each chat to not upload any PII.
