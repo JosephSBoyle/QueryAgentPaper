@@ -17,7 +17,7 @@
 
 % Change "review" to "final" to generate the final (sometimes called camera-ready) version.
 % Change to "preprint" to generate a non-anonymous version with page numbers.
-\usepackage[review]{acl}
+\usepackage[final]{acl}
 
 % Standard package includes
 \usepackage{times}
@@ -164,7 +164,7 @@ QueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that i
 \section{Introduction}
 
 % focus has been elsewhere
-Healthcare organisations collect large quantities of healthcare data, which clinicians can use to proactively manage the needs of their patients.
+Healthcare organisations collect large quantities of data, which clinicians can use to proactively manage the needs of their patients.
 The ability to interrogate recorded healthcare data to generate answers is a limiting factor in the proactive management of population health.
 
 Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information: leaving large population health benefits on the table.
@@ -654,33 +654,31 @@ Patient-level recall is the proportion of the patients in the reference answer c
 \begin{table*}[ht!]
 \centering
 \resizebox{\textwidth}{!}{
-\begin{tabular}{lccccccc}
+\begin{tabular}{lrccccr}
 \hline
- & \multicolumn{2}{c}{Accuracy} & \multicolumn{4}{c}{Patient} & \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-7}
+    & \multicolumn{1}{c}{Accuracy} & \multicolumn{1}{c}{Query Type} & \multicolumn{3}{c}{Patient Overlap} & Mean tokens \\
+% \hline
+    \cmidrule(lr){2-2} \cmidrule(lr){3-3} \cmidrule(lr){4-6} \cmidrule(lr){7-7}
+    &  (\%) & (\%) & rec. & prec. & F1-score & \\ 
+\hline
+\textsc{QA} & \Accuracy{} (\Passed{} / \Total{}) & \textbf{\Semanticparsingjaccardscore} & \textbf{\Recall} & \Precision & \Fscore & \Tokensmean \\
 
-Standard & EX. & Semantic parsing & recall & precision &F1-score & Jaccard & Avg. Token use \\
+\textsc{+ IR Agent} & \irAccuracy{} (\irPassed{} / \irTotal{}) & \textbf{\irSemanticparsingjaccardscore} & \irRecall & \textbf{\irPrecision} & \irFscore & \irTokensmean \\
+
+\textsc{+ IR Agent w/ UMLS} & \textbf{\IRumlsAccuracy{} (\IRumlsPassed{} / \IRumlsTotal{})} &  \IRumlsSemanticparsingjaccardscore & \IRumlsRecall & \IRumlsPrecision & \IRumlsFscore & \textbf{\IRumlsTokensmean} \\
 \hline
 
-\textsc{QA} & \Accuracy{} (\Passed{} / \Total{}) & \textbf{\Semanticparsingjaccardscore} & \textbf{\Recall} & \Precision & \Fscore & \Jaccardscore & \Tokensmean \\
-
-\textsc{+ IR Agent} & \irAccuracy{} (\irPassed{} / \irTotal{}) & \textbf{\irSemanticparsingjaccardscore} & \irRecall & \textbf{\irPrecision} & \irFscore & \irJaccardscore & \irTokensmean \\
-
-\textsc{+ IR Agent w/ UMLS} & \textbf{\IRumlsAccuracy{} (\IRumlsPassed{} / \IRumlsTotal{})} & \IRumlsSemanticparsingjaccardscore & \IRumlsRecall & \IRumlsPrecision & \IRumlsFscore & \textbf{\IRumlsJaccardscore} & \textbf{\IRumlsTokensmean} \\
+\multicolumn{7}{l}{Sequential} \\
 \hline
-
-\multicolumn{8}{l}{Sequential} \\
+\textsc{QA} & \sAccuracy{} (\sPassed{} / \sTotal{}) & \sSemanticparsingjaccardscore & \sRecall & \sPrecision & \sFscore & \sTokensmean \\
+\textsc{+IR Agent} &  \sirAccuracy{} (\sirPassed{} / \sirTotal{}) & \sirSemanticparsingjaccardscore & \sirRecall & \sirPrecision & \sirFscore & \sirTokensmean \\
 \hline
-\textsc{QA} & \sAccuracy{} (\sPassed{} / \sTotal{}) & \sSemanticparsingjaccardscore & \sRecall & \sPrecision & \sFscore & \sJaccardscore & \sTokensmean \\
-\textsc{+IR Agent} & \sirAccuracy{} (\sirPassed{} / \sirTotal{}) & \sirSemanticparsingjaccardscore & \sirRecall & \sirPrecision & \sirFscore & \sirJaccardscore & \sirTokensmean \\
-\hline
-% \textsc{QA+IR Agent} & 41.67 & 0.88 & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
-% \textsc{QA+IR Agent + UMLS} & & tbc. -> & 0.88  &  0.69 & 0.74 & 0.68 & 37,075 \\
-
-\end{tabular}}
-\caption{
-    QueryAgent's (QA) performance on epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. Performance is measured relative to a reference answer created by a professional analyst. EX. = Execution accuracy (exact match).
+\end{tabular}
 }
+\caption{
+    QueryAgent's (QA) performance on 35 epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. We assess accuracy as a) whether or not the retrieved dataset exactly matches the expected dataset b) whether the type of query is correct, e.g. a count of patients versus a list of patients. Performance is automatically evaluated using an analyst created answer as ground-truth and averaged at the query level. 
+}
+
 \label{tab:epi-coho-results}
 \end{table*}
 

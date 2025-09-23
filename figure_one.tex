@@ -39,8 +39,8 @@
 
 % Retrieval Sub-agent 
 \node[innerbox, below=3.05cm of request]  (retrieval0) {Your job is to find up to five of the most relevant entities for the user's requested term or phrase in our local database which can be accessed using the `search` function.};
-\node[databox, below=of retrieval0] (retrieval1) {`ddc'};
-\node[umlstool, below=of retrieval1]   (retrieval2) {\texttt{lookup}(`ddC')};
+% \node[databox, below=of retrieval0] (retrieval1) {`ddc'};
+\node[umlstool, below=of retrieval0]   (retrieval2) {\texttt{lookup}(`ddC')};
 \node[databox, below=of retrieval2]    (retrieval3) {\textit{Dideoxycytidine}};
 \node[umlstool, below=of retrieval3]   (retrieval4) {\texttt{lookup}( \\ `Dideoxycytidine')};
 \node[databox, below=of retrieval4]    (retrieval5) {\textit{Zalcatabine}};
@@ -48,14 +48,32 @@
 \node[databox, below=of retrieval6]    (retrieval7) {Zalcatabine | ConceptID 1100};
 
 % Grouping boxes
-\node[outerbox, fit=(request) (response), label=above:Chat Interface] (interface) {};
-\node[outerbox, fit=(prompt) (search1) (result1) (search2) (result2) (backend), label=above:Query Agent, fill=yellow!17] (processing) {};
-\node[outerbox, fit=(retrieval0) (retrieval1) (retrieval2) (retrieval3) (retrieval4) (retrieval5) (retrieval6) (retrieval7), fill=teal!7, label=above:Retrieval Agent] (retrieval) {};
+% Grouping boxes with circle labels
+\node[outerbox, fit=(request) (response), 
+      label={[circle, draw, fill=white, font=\Large, scale=0.75, xshift=-2cm]above:1}, 
+      label={[font=\small]above:Chat Interface}] (interface) {};
+
+\node[outerbox, fit=(prompt) (search1) (result1) (search2) (result2) (backend), fill=yellow!17,
+      label={[circle, draw, fill=white, font=\Large, scale=0.75, xshift=-2cm]above:2},
+      label={[font=\small]above:Query Agent}] (processing) {};
+
+\node[outerbox, fit=(retrieval0) (retrieval2) (retrieval3) (retrieval4) (retrieval5) (retrieval6) (retrieval7), fill=teal!7,
+      label={[circle, draw, fill=white, font=\Large, scale=0.75, xshift=-2cm]above:3},
+      label={[font=\small]above:Retrieval Agent}] (retrieval) {};
+
+% NEW STAGGERED RETRIEVAL BOX
+\node[outerbox, xshift=1.25mm, yshift=-1mm, fit=(retrieval0) (retrieval2) (retrieval3) (retrieval4) (retrieval5) (retrieval6) (retrieval7), fill=teal!7] (retrieval_stagger) {};
+\coordinate (retrieval_stagger_top_right) at ([xshift=5mm,yshift=5mm]retrieval.north east);
+\coordinate (retrieval_stagger_bottom_left) at ([xshift=5mm,yshift=-5mm]retrieval.south west);
+
+% Re-draw so its in front of the other box lol...
+\node[outerbox, fit=(retrieval0) (retrieval2) (retrieval3) (retrieval4) (retrieval5) (retrieval6) (retrieval7), fill=teal!7] (retrieval) {};
+
 
 %%% DUPLICATES FOR PLOTTING OVER THE BACKGROUND BOXES -- KEEP IN SYNC %%%
 \node[innerbox, below=3.05cm of request]  (aretrieval0) {Your job is to find up to five of the most relevant entities for the user's requested term or phrase in our local database which can be accessed using the `search` function.};
-\node[databox, below=of retrieval0] (aretrieval1) {`ddc'};
-\node[umlstool, below=of retrieval1]   (aretrieval2) {\texttt{lookup}(`ddC')};
+% \node[databox, below=of retrieval0] (aretrieval1) {`ddc'};
+\node[umlstool, below=of retrieval0]   (aretrieval2) {\texttt{lookup}(`ddC')};
 \node[databox, below=of retrieval2]    (aretrieval3) {\textit{Dideoxycytidine}};
 \node[umlstool, below=of retrieval3]   (aretrieval4) {\texttt{lookup}( \\ `Dideoxycytidine')};
 \node[databox, below=of retrieval4]    (aretrieval5) {\textit{Zalcatabine}};
@@ -74,17 +92,22 @@
 
 
 % Define both database nodes
-\node[data, aspect=0.25, draw, shape border rotate=90, minimum height=1, minimum width=2cm, below=1cm of processing,  fill=red!17] (umls) {UMLS};
-\node[data, aspect=0.25, draw, shape border rotate=90, minimum height=1, minimum width=2cm, below=0.25cm of umls, fill=blue!10] (concept) {Concepts};
+\node[data, aspect=0.25, draw, shape border rotate=90, minimum height=1, minimum width=2cm, below=1cm of processing,  fill=blue!10] (umls) {UMLS};
+\node[data, aspect=0.25, draw, shape border rotate=90, minimum height=1, minimum width=2cm, below=0.25cm of umls, fill=red!17] (concept) {Concepts};
 
 % Patient Data
 \node[data, aspect=0.25, draw, shape border rotate=90, minimum height=1, minimum width=2cm, below=1cm of concept] (ehr) {EHR};
 
 % Then the data layer grouping box that fits both
-\node[knowledgebox, fit=(umls) (concept), label=above:Knowledge] (data) {};
+% \node[knowledgebox, fit=(umls) (concept), label=above:Knowledge] (data) {};
+\node[knowledgebox, fit=(umls) (concept),
+      label={[circle, draw, fill=white, font=\Large, scale=0.75, xshift=-2cm]above:4},
+      label={[font=\small]above:Knowledge}] (data) {};
 
 % TODO make invis box
 \node[knowledgebox, draw=none, fit=(ehr), label=above:Patient Data] (patientdata) {};
+\node[knowledgebox, draw=none, fit=(ehr)] (patientdata) {};
+
 
 
 % Arrows
@@ -94,9 +117,14 @@
 % \draw[arrow] (retrieval4.east) |- ++(3, 0) -- (ehr.south);
 % \draw[arrow] (backend.south) -- (ehr.north);
 
-\draw[arrow] (processing.west) -- (retrieval.north east);
-% TODO: offset the second arrow:
-\draw[arrow] (processing.west) -- (retrieval.north east);
+\draw[arrow] (interface.east) -- (processing);
+
+% \draw[arrow] (processing.west) -- (retrieval.north east);
+\draw[arrow] (search1.west) -- (retrieval.north east);
+\draw[arrow] ([yshift=-19mm]search1.west) -- ([yshift=-19mm, xshift=1mm]retrieval.north east);
+
+
+% \draw[arrow] (search2.west) -- (retrieval_stagger.north east);
 
 % sub-agent dashed-lines
 \draw[arrow] (retrieval.east) -- (data.west);
