@@ -129,9 +129,9 @@
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textsc{QueryAgent,} a Task-Oriented Dialogue system for performing population health management operations.
-We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients.
+In this paper we describe \textsc{QueryAgent,} a dialogue system for automating population health queries.
 We evaluate the agent's capacity to autonomously handle a range of health informatics tasks on an existing epidemiological question benchmark and through a real-world user evaluation.
+We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients.
 
 Our results suggest that there is broad potential for AI assistants to augment the ability of clinicians to generate actionable information
 from patient health records.
@@ -154,7 +154,7 @@ from patient health records.
 \centering
 \includestandalone{figure\_one}
 \caption{
-QueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with the data environment.
+QueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with its data environment.
 The data environment comprises a local database of analyst-created medical concepts, and an open-access knowledge-base, UMLS, which is used to help ground the agent faithfully map clinical surface forms (e.g. `ddC') to local concepts, a process which involves multi-step information retrieval.
 QueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that it can focus on creating the database query.}
 \label{fig:question-to-query}
@@ -165,9 +165,9 @@ QueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that i
 
 % focus has been elsewhere
 Healthcare organisations collect large quantities of data, which clinicians can use to proactively manage the needs of their patients.
-The ability to interrogate recorded healthcare data to generate answers is a limiting factor in the proactive management of population health.
+The ability to interrogate recorded healthcare data to generate answers is a limiting factor in the proactive management of population health: to perform sophisticated queries, clinicians rely on specialist data analysts.
 
-Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information: leaving large population health benefits on the table.
+Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information leaving large population health benefits on the table.
 
 % Ensure this is rendered on page 2.
 
@@ -180,7 +180,7 @@ Whilst there has been a concerted effort from machine learning researchers to au
 
 % Formulation
 % \subsection{Task}
-This paper attempts to generate population health queries from real-world user questions.
+This paper attempts to generate population health queries from real-world user questions, enabling clinicians to use natural language to query EHR data. 
 This is a complex challenge encompassing a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query.
 We make the following three contributions:
 
@@ -198,24 +198,22 @@ We make the following three contributions:
 \subsection{Task-Oriented Dialogue and LLM Agents}
 % todo: make more relevant to our work.
 Task-Oriented Dialogues (TOD) are ones in which an agent and user collaborate to act out a user's goal.
-This is in contrast to open-domain dialogue, which is not limited to the domain of any specific task.
 A sub-task of TOD is semantic parsing, the process of creating logical interpretations of an instruction / utterance in the context of the dialogue thus far in order to determine what action to perform next.
 
 Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility.
 A typical modular architecture might include a component for understanding the user's intent and extracting structured information from it (NLU); a component for tracking the state of the dialogue (DST); a policy module for determining the next action; and a final natural languge generation model for synthesising a response.  
 
 As pointed out by \citet{yi_survey_2025}, the propagation of errors between modules hampers the performance of these systems, and they have largely fallen to the wayside in favour of systems which utilize a single sequence-to-sequence model to perform the entire task.
-Examples of the latter include \citet{wen_network-based_2017}, who developed a novel NN architecture and \citet{andreas_task-oriented_2020} were the first to treat TOD as a data flow graph in which the agent iteratively generates the program as the conversation progresses.
+Examples of the latter include \citet{wen_network-based_2017}, who developed an end-to-end trainable NN architecture and \citet{andreas_task-oriented_2020} were the first to treat TOD as a data flow graph in which the agent iteratively generates the program as the conversation progresses.
 
 \citet{hosseini-asl_simple_2022} created SimpleTOD, an end-to-end architecture utilising only a single pre-trained language model, GPT-2, to perform all aspects of task completion including database calls, with the results concatenated to the context.
 In sum, recent progress in TOD systems has been to move away from modular architectures and towards unified ones, epitomised by the SimpleTOD approach, which uses only a finetuned LLM. 
 
 
 % Two key challenges in TOD maintaining coherence over long multi-turn conversations (\citet{laban_llms_2025}), as well as identifying when f under-specified questions\cite{gan_clarq-llm_2024}
-In 2025, the most common form of TOD agents, referred to simply as `agents', are coding ones such as Claude Code, which are capable of performing programming tasks with 50\% success 
-been demonstrated to \cite{kwa_measuring_2025}.
+In 2025, the most common form of agents, are coding ones like Claude Code (Anthropic), Gemini-CLI (Google) and Codex (OpenAI), which are capable of autonomously performing tasks which take human engineers multiple hours to complete \cite{kwa_measuring_2025}.
 %LLM agents (agents) refer to instruction-tuned models which are augmented with tools (functions) which enable them to take actions within an environment e.g. retrieving information from Wikipedia in order to obtain an answer \cite{yao_reac_2023}.
-Similar to SimpleTOD executing database commands based on autoregressive modelling of the user's belief state, state-of-the-art agents issue what's known as `tools-calls' through autoregressive language modelling. This is referred to as the `ReACT' paradigm, after the seminal paper from \citet{yao_reac_2023} which popularised the approach. To conclude, LLM agents are a new and powerful approach to goal-oriented dialogue systems, in which the agent can autonomously and iteratively interact with it's environment in order to accomplish the user's goals.
+Similar to SimpleTOD executing database commands based on autoregressive modelling of the user's belief state, state-of-the-art agents issue what's known as `tools-calls' through autoregressive language modelling. This is referred to as the `ReACT' paradigm after the eponymous paper from \citet{yao_reac_2023} which popularised the approach. To conclude, LLM agents are a new and powerful approach to goal-oriented dialogue systems, in which the agent can autonomously and iteratively interact with it's environment in order to accomplish the user's goals.
 
 
 \subsection{Agentic Information Retrieval (IR)}
@@ -223,8 +221,8 @@ Agentic IR (AIR) is a new paradigm in which language models iteratively interact
 The key of an agentic approach to IR over a traditional one is the ability to adapt their search as information is collected.
 %This makes the agentic approach more robust to various linguistic phenomena.
 
-Agentic IR methods are a rapid area of development, with successful systems employing a variety of different tools for agents to IR.
-For instance, the current SOTA coding agent, Claude Code, uses only a lexical search function, akin to UNIX's `grep' tool to retrieve files, whilst Windsurf, a popular agentic coding IDE, uses a more complex system involving embeddings. We categorise these two approaches into \textbf{lexical} and \textbf{semantic} approaches to agentic-IR.
+A key decision in designing AIR systems is that of how agents should be able to search for information in their data environment, for instance how should a coding agent search a codebase? The best approaches have yet to be determined, and there are commercially successful systems employing a variety of different retrieval mechanisms.
+For instance, the current SOTA coding agent, Claude Code, uses only a lexical search function, akin to UNIX's `grep' tool to retrieve files, whilst Windsurf, a popular agentic coding IDE, uses a more complex system involving an index of file embeddings. We categorise these two approaches into \textbf{lexical} and \textbf{semantic} approaches to agentic-IR.
 
 \subsection{Medical Codes and Concepts}
 
@@ -263,8 +261,10 @@ Due to the ambiguity inherent in many natural language utterances, the agent oft
 This leads to cases where the model changes it's interpretation of the user's utterance dynamically based on the content of it's information environment.
 For example, the agent interprets \textit{`give me patients with CFS'} as a search for patients with \textbf{c}hronic \textbf{f}atigue \textbf{s}yndrome but changes it's interpretation upon seeing that all CFS concepts refer to the Clinical Frailty Scale. 
 
+
+The degradation of LLM outout quality in long, multi-turn conversations has been noted in prior art \cite{laban_llms_2025}, and is colloquially referred to as `context rot' by practitioners.
 We experiment with a sub-agent for retrieving the correct concepts, a divide and conquer strategy in which the sub-agent retrieves entities and the main agent composes them into a query.
-This simple task decomposition reduces the context poisoning which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back relevant entities, instead of the many hundred concepts returned by lexical search (`diabetes' returns 407 concepts, for instance).
+This simple task decomposition reduces the `context rot' which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back relevant entities, instead of the many hundred concepts returned by lexical search (`diabetes' returns 407 concepts, for instance).
 
 We demonstrate that this improves agent success rate (SR), particularly in complex multi-turn conversations in which the context contains a lot of information.
 % We hypothesise that this is due to the irrelevant entities `distracting' the model via the attention mechanism, a hypothesis we provide evidence for through the inspection of attention-weights. % Is attention weight given to incorrect entities at the expense of correct ones!? Find out.
@@ -364,8 +364,7 @@ Returning concepts ends the sub-agents routine, and continues the main agent's t
 
 To aid the model interpret highly specialised and evolving clinical language, the sub-agent may be provided with a third tool: `search\_umls', which enables it to retrieve information from the Unified Medical Language System® (UMLS®).
 Information retrieved this way often includes mapping compound names/acronyms to drug names, e.g. `ddC' -> `dideoxycytidine' -> `Zalcitabine' (a drug used to treat HIV).
-This improves the agent's SR on tasks involving niche knowledge.
-
+This improves the agent's SR on tasks involving niche knowledge, as shown in Figure \ref{fig:question-to-query}.
 
 \subsection{Workflows}
 
@@ -698,7 +697,7 @@ In this study we described QueryAgent, a novel text-to-query system in which an 
 We found evidence that information retrieval in real-world databases with semantically overlapping medical concepts was a challenging sub-task for LLMs; and that assigning this IR sub-task to a distinct sub-agent provided a performance uplift in our conversational dialogues setup.
 
 We demonstrated that QA can faithfully and interpretably generate health informatics queries, overcoming a limitation of prior work which noted that queries generated in SQL remain a `black box' to users unfamiliar with the language  (\citet{ziletti_generating_2025}).
-Whilst in some cases this may be acceptable, the success of QA is evidence that generating intermediate representations similar to that proposed by \citet{guo_towards_2019} is a practical approach to generating queries for users who may not be familiar with SQL.
+Whilst in some cases this may be acceptable, the success of QA is evidence that generating intermediate representations similar to that proposed by \citet{guo_towards_2019} is a practical approach to generating queries for clinical users who are unlikely to be familiar with SQL.
 
 
 \section{Limitations}
