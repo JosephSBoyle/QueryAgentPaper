@@ -13,38 +13,43 @@
     node distance=2cm,
     % --- STYLES ---
     % Main containers (clouds)
+    % outerbox/.style={rectangle, draw, thick, rounded corners, minimum width=3.5cm, minimum height=2cm, inner sep=6pt},
+    outerbox/.style={rectangle, draw, thick, rounded corners, minimum width=3.5cm, minimum height=2cm, inner sep=4pt},
     nhs-intranet/.style={
-        minimum width=3cm,
-        minimum height=2cm,
-        draw=red,
+        outerbox,
+        minimum height=9cm,
+        draw=orange,
         thick,
+        inner sep=1cm,
     },
     ehs/.style={
         nhs-intranet,
-        draw=green!70!black,
+        draw=black,
         thick,
         rounded corners,
         minimum height=4cm,
-        minimum width=4.5cm,
-        align=center
+        minimum width=6cm,
+        align=center,
     },
     www-cloud/.style={
-        minimum width=2cm,
-        minimum height=1cm,
-        draw=orange,
+        outerbox,
+        minimum height=9cm,
+        draw=red,
         thick,
         aspect=1.5
+        inner sep=1cm,
     },
     % Database cylinders
     database/.style={
         cylinder,
         shape border rotate=90,
         draw,
-        fill=blue!20,
+        fill=blue!10,
         minimum height=1cm,
         minimum width=2.5cm,
         text width=2cm,
-        align=center
+        align=center,
+        aspect=0.25
     },
     % Rectangular nodes
     box-green/.style={
@@ -53,16 +58,16 @@
         thick,
         rounded corners,
         minimum height=4cm,
-        minimum width=4.5cm,
+        minimum width=5cm,
         align=center
     },
-    box-purple/.style={
+    agent-box/.style={
         draw=purple!80!black,
         fill=purple!20,
         thick,
         rounded corners,
-        minimum height=1.5cm,
-        minimum width=2.5cm,
+        minimum height=3cm,
+        minimum width=4.8cm,
         align=center
     },
     box-blue/.style={
@@ -70,9 +75,9 @@
         fill=blue!20,
         thick,
         rounded corners,
-        minimum height=1.5cm,
-        minimum width=2.5cm,
-        align=center
+        minimum height=1cm,
+        minimum width=2cm,
+        align=center,
     },
     % Icon-like node
     icon-node/.style={
@@ -92,15 +97,12 @@
 ]
 
 % --- NODES ---
-% Central agent nodes
-
 % Databases at the bottom
-\node[database, below left=of ehealth, xshift=-1cm, yshift=-4cm] (patient_data)   {Patients};
-\node[database, below right=of agent, yshift=-2cm]                     (concept_db)   {Concepts};
+\node[database, below left=of ehealth, xshift=-3cm, yshift=-2.7cm] (patient_data)   {Patients};
+\node[database, below right=of agent, yshift=-2cm]               (concept_db)     {Concepts};
 
-% Healthcare node on the left
 \node[icon-node, left=of patient_data, yshift=6cm, xshift=-3cm] (phc_icon) {\symbol{9764}}; % A simple placeholder icon
-\node[align=center, below=0.2cm of phc_icon, text=red]          (phc_text) {Primary\\Healthcare\\Centre};
+\node[align=center, left=0.2cm of phc_icon, text=red]          (phc_text) {Primary\\Healthcare\\Centre};
 
 \node[icon-node, below left=of phc_icon] (shc_icon) {\symbol{9764}};
 \node[align=center, below=0.2cm of shc_icon, text=red] (shc_text) {Secondary\\Care};
@@ -108,43 +110,42 @@
 \node[icon-node, below right=of shc_icon] (ssc_icon) {\symbol{9764}};
 \node[align=center, below=0.2cm of ssc_icon, text=red] (ssc_text) {Specialist\\Care};
 
-% web resources
-\node[box-blue, right=of ehealth, yshift=0cm, xshift=2.5cm]   (llm) {LLM\\ Gemini; \\ ChatGPT; \\ Claude};
-\node[database, below=of llm]                                 (umls) {UMLS};
+\node[box-blue, right=of ehealth, yshift=0cm, xshift=5cm]   (llm) {LLM\\ Gemini; \\ ChatGPT; \\ Claude};
+\node[database, below=of llm]                               (umls) {UMLS};
 
 
-% eHS
-\node[box-purple] (agent) {\textsc{QueryAgent}};
-\node[ehs, fit=(agent) (ehealth) (concept_db)] (ehealth) {};
-\node[above=0.2cm of ehealth] {eHealthScope};
+\node[agent-box] (agent) {\Large \textsc{QueryAgent}};
+\node[ehs, fit=(agent) (ehealth) (concept_db), label=eHealthScope] (ehealth) {};
+
 
 % NHS Intranet
-\node[nhs-intranet, fit=(shc_icon) (ssc_icon) (phc_icon) (ehealth) (patient_data) (concept_db), label={[red, font=\bfseries]above:NHS intranet}] (nhs_fit) {};
+\node[nhs-intranet, fit=(shc_icon) (ssc_icon) (phc_icon) (ehealth) (patient_data) (concept_db) (ehealth),
+        label={[orange, font=\bfseries]above:NHS Intranet}] (nhs_fit) {};
 
 % World Wide Web cloud
-\node[www-cloud, fit=(llm) (umls), label={[orange, font=\bfseries]:World wide web}] (www_fit) {};
+\node[www-cloud, fit=(llm) (umls), label={[red, font=\bfseries]:Internet}] (www_fit) {};
 
 % --- LINES & ARROWS ---
 % Dashed line separating agent and patient data
 % \draw[dashed, very thick, red] (agent.west) -- (agent.west |- ehealth.south);
 
 % Arrows
-\draw[arrow] (phc_icon) to[bend left=10] (ehealth.west);
-\draw[arrow] (shc_icon) to[bend left=10] (ehealth.west);
-\draw[arrow] (ssc_icon) to[bend left=10] (ehealth.west);
-\draw[arrow] (agent) to[bend left=20] (umls);
-\draw[arrow] (agent) to[bend left=10]  (concept_db);
+\draw[arrow] (phc_icon) to[bend left=5] (ehealth.west);
+\draw[arrow] (shc_icon) to[bend left=5] (ehealth.west);
+\draw[arrow] (ssc_icon) to[bend left=5] (ehealth.west);
+\draw[arrow] (agent)    to[bend left=5] (concept_db);
+\draw[arrow] (agent)    to[bend left=5] (umls);
 
-\draw[arrow] (agent.east) to[bend left=10]  (llm.west);
-\draw[arrow] (agent.south) to[bend left=20]  (ehealth.west);
-\draw[arrow] (patient_data) to[bend left=10]  (ehealth.west);
+\draw[arrow] (agent.east)   to[bend left=5]  (llm.west);
+\draw[arrow] (patient_data) to[bend left=5]  (ehealth.west);
+\draw[arrow] (agent.west)  to[bend left=20]  (ehealth.west);
 
 % \draw[arrow] (llm.south) to[out=-90, in=0] (concept_db.east);
 % \draw[arrow] (concept_db.north east) to[out=45, in=-90, looseness=0.8] (llm.south);
 
 % --- TITLE ---
-\node[above=1.5cm of nhs_fit] (title) {Separation of LLM & ``knowledge'' vs patient data};
-\draw[red, thick] (title.south west) -- (title.south east);
+% \node[above=1.5cm of nhs_fit] (title) {Separation of LLM & ``knowledge'' vs patient data};
+% \draw[red, thick] (title.south west) -- (title.south east);
 
 \end{tikzpicture}
 \end{document}
