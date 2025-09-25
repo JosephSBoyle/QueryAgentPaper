@@ -1,0 +1,142 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{
+    shapes.geometric, % For cylinder shape
+    shapes.clouds,    % For cloud shape
+    positioning,      % For placing nodes relative to each other
+    arrows.meta,      % For arrow styles
+    fit               % To fit shapes around nodes
+}
+
+\begin{document}
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    % --- STYLES ---
+    % Main containers (clouds)
+    nhs-cloud/.style={
+        % cloud,
+        % cloud puffs=13,
+        minimum width=3cm,
+        minimum height=2cm,
+        draw=red,
+        thick,
+    },
+    www-cloud/.style={
+        % cloud,
+        % cloud puffs=7,
+        minimum width=2cm,
+        minimum height=1cm,
+        draw=orange,
+        thick,
+        aspect=1.5
+    },
+    % Database cylinders
+    database/.style={
+        cylinder,
+        shape border rotate=90,
+        draw,
+        fill=blue!20,
+        minimum height=1cm,
+        minimum width=2.5cm,
+        text width=2cm,
+        align=center
+    },
+    % Rectangular nodes
+    box-green/.style={
+        draw=green!50!black,
+        fill=green!20,
+        thick,
+        rounded corners,
+        minimum height=4cm,
+        minimum width=4.5cm,
+        align=center
+    },
+    box-purple/.style={
+        draw=purple!80!black,
+        fill=purple!20,
+        thick,
+        rounded corners,
+        minimum height=1.5cm,
+        minimum width=2.5cm,
+        align=center
+    },
+    box-blue/.style={
+        draw=blue!80!black,
+        fill=blue!20,
+        thick,
+        rounded corners,
+        minimum height=1.5cm,
+        minimum width=2.5cm,
+        align=center
+    },
+    % Icon-like node
+    icon-node/.style={
+        draw=red,
+        thick,
+        circle,
+        minimum size=1.5cm,
+        align=center
+    },
+    % Arrow style
+    arrow/.style={
+        -{{Stealth[length=3mm]}},
+        thick,
+        shorten <=2pt,
+        shorten >=2pt
+    }
+]
+
+% --- NODES ---
+% Central agent nodes
+\node[box-green] (ehealth) {};
+\node at ([yshift=1.2cm]ehealth.center) {eHealthScope};
+\node[box-purple] at (ehealth.center) (agent) {HealthQuery\\Agent};
+
+% Databases at the bottom
+\node[database, below left=of ehealth, xshift=-1cm, yshift=-1.5cm] (patient_data)   {Patient data};
+\node[database, below=of agent, yshift=-2cm]                       (concept_db)     {Concept database};
+
+% Healthcare node on the left
+\node[icon-node, left=of patient_data, yshift=6cm, xshift=-3cm] (phc_icon) {\symbol{9764}}; % A simple placeholder icon
+\node[align=center, below=0.2cm of phc_icon, text=red] (phc_text) {Primary\\Healthcare\\Centre};
+
+\node[icon-node, below left=of phc_icon] (shc_icon) {\symbol{9764}};
+\node[align=center, below=0.2cm of shc_icon, text=red] (shc_text) {Secondary\\Care};
+
+\node[icon-node, below right=of shc_icon] (ssc_icon) {\symbol{9764}};
+\node[align=center, below=0.2cm of ssc_icon, text=red] (ssc_text) {Specialist\\Care};
+
+% web resources
+\node[box-blue, right=of ehealth, yshift=2.5cm, xshift=2.5cm]   (llm) {LLM\\ Gemini; \\ ChatGPT; \\ Claude};
+\node[database, below=of llm, xshift=1cm, yshift=-1cm]          (umls) {UMLS};
+
+% NHS Intranet
+\node[nhs-cloud, fit=(shc_icon) (ssc_icon) (phc_icon) (ehealth) (patient_data) (concept_db), label={[red, font=\bfseries]above:NHS intranet}] (nhs_fit) {};
+% --- CLOUDS (fitted around other nodes) ---
+
+
+% World Wide Web cloud
+\node[www-cloud, fit=(llm) (umls), label={[orange, font=\bfseries]:World wide web}] (www_fit) {};
+
+% --- LINES & ARROWS ---
+% Dotted line
+\draw[dashed, thick, red] (ehealth.north west) -- (ehealth.south west |- patient_data.south);
+
+% Arrows
+\draw[arrow] (phc_icon) to[bend left=10] (ehealth.west);
+\draw[arrow] (shc_icon) to[bend left=10] (ehealth.west);
+\draw[arrow] (ssc_icon) to[bend left=10] (ehealth.west);
+\draw[arrow] (ehealth.west) to[bend left=10] (patient_data.north);
+\draw[arrow] (agent) -- (umls);
+\draw[arrow] (agent) -- (concept_db);
+
+\draw[arrow] (agent.east) to[out=0, in=180] (llm.west);
+\draw[arrow] (llm.south) to[out=-90, in=0] (concept_db.east);
+\draw[arrow] (concept_db.north east) to[out=45, in=-90, looseness=0.8] (llm.south);
+
+% --- TITLE ---
+\node[above=1.5cm of nhs_fit] (title) {Separation of LLM & ``knowledge'' vs patient data};
+\draw[red, thick] (title.south west) -- (title.south east);
+
+\end{tikzpicture}
+\end{document}
