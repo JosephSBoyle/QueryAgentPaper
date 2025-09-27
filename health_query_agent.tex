@@ -54,7 +54,7 @@
 %
 % and set <dim> to something 5cm or larger.
 
-\title{QueryAgent: A Task-Oriented Dialogue System for Automated Clinical Informatics}
+\title{ClinQueryAgent: A Task-Oriented Dialogue System for Automated Clinical Informatics}
 
 
 % Author information can be set in various styles:
@@ -75,13 +75,13 @@
 
 \author{ \bf
 Joseph S. Boyle$^{1,2,7}$ 
-Mike O'Neil$^{6,7}$
+Mike O'Neil$^{6}$
 Maria Liakata$^{2,4,5}$
 Alison Q. Smithard$^{1,3,7}$
 \\ \\
 
-$^1$Canon Medical Research Europe $^2$Queen Mary University of London \\ $^3$University of Edinburgh $^4$University of Warwick $^5$The Alan Turing Institute \\ 
-$^6$Saxon Cross Surgery $^7$Nottingham and Nottinghamshire NHS
+$^1$Canon Medical Research Europe $^2$Queen Mary University of London \\ $^3$University of Edinburgh $^4$University of Warwick \\
+$^5$The Alan Turing Institute $^6$Nottingham and Nottinghamshire ICB, NHS 
 }
 % \small{
 %    \textbf{Correspondence:} \href{mailto:joseph.boyle@mre.medical.canon}{joseph.boyle@mre.medical.canon}
@@ -134,12 +134,7 @@ $^6$Saxon Cross Surgery $^7$Nottingham and Nottinghamshire NHS
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we describe \textsc{QueryAgent,} a dialogue system for automating population health queries.
-We evaluate the agent's capacity to autonomously handle a range of health informatics tasks on an existing epidemiological question benchmark and through a real-world user evaluation.
-We deploy the system in a familiar chat interface embedded within an existing population health management platform and run experiments to determine it's utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 million active patients.
-
-Our results suggest that there is broad potential for AI assistants to augment the ability of clinicians to generate actionable information
-from patient health records.
+In this paper we introduce \textsc{ClinQueryAgent}, a dialogue agent system for automating population health queries. We deploy the system via a chat window embedded within an existing population health management platform and run experiments to determine its utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 active patients. We evaluate the system's capacity to autonomously handle a range of health informatics tasks on the \textit{EpidemiologicalCohort} benchmark and through a real-world user evaluation. Our results show that, using natural language requests that require minimal clinical coding expertise, both analysts and clinicians are able to easily generate actionable information from patient health records.
 % can act as clinical copilots, aiding users in performing specialist tasks (database querying) in a way that maintains transparency.
 
 % We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
@@ -169,10 +164,9 @@ QueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that i
 \section{Introduction}
 
 % focus has been elsewhere
-Healthcare organisations collect large quantities of data, which clinicians can use to proactively manage the needs of their patients.
-The ability to interrogate recorded healthcare data to generate answers is a limiting factor in the proactive management of population health: to perform sophisticated queries, clinicians rely on specialist data analysts.
+Healthcare organisations collect large quantities of data, which clinicians can use to proactively manage the needs of their patients. However, the task of interrogating recorded healthcare data is complex; to perform sophisticated queries, clinicians rely on specialist data analysts.
 
-Whilst there has been a concerted effort from machine learning researchers to automate various extractive medical tasks such as clinical coding and radiology report generation, relatively few studies have investigated how to maximise clinical use of this information leaving large population health benefits on the table.
+Whilst there has been a concerted effort from machine learning researchers to automate data generation tasks such as report writing and clinical coding, relatively few studies have investigated how to maximise clinical benefit from recorded data.
 
 % Ensure this is rendered on page 2.
 
@@ -185,8 +179,9 @@ Whilst there has been a concerted effort from machine learning researchers to au
 
 % Formulation
 % \subsection{Task}
-This paper attempts to generate population health queries from real-world user questions, enabling clinicians to use natural language to query EHR data. 
-This is a complex challenge encompassing a wide range of abilities: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query.
+This paper attempts to directly generate population health database queries from real-world user questions, enabling clinicians to use natural language to query electronic health record (EHR) data.
+% Text-to-query systems rely on a range of NLU capabilities. Semantic parsing is required to interpret the user's intent, biomedical NER to determine the concepts being referenced, 
+% This involves a number of challenges: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query.
 We make the following three contributions:
 
 \begin{enumerate}
@@ -345,7 +340,7 @@ In this work, we generate an SQL query by first generating an intermediate repre
 	\includestandalone[width=0.9\textwidth]{figure\_two}
 	\caption{
 Query Agent (QA) is situated within the NHS Intranet and can access data from a locally created Concept database, as well as the world wide web.
-Patient privacy is fully preserved and no information is ever accessible to the QA, rather it generates a query which is executed in the NHS secure intranet. 
+Data is aggregated from inpatient/outpatient and specialist care centres in a single warehouse. Patient privacy is fully preserved and no information from EHRs is ever accessible to the CQA, rather it generates a \textit{query} which is executed by the user, allowing them to view data according to their level of permissions.
 }
 	\label{fig:system-diagram}
 \end{figure*}

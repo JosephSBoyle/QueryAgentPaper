@@ -31,10 +31,10 @@
 % Processing components
 \node[innerbox, right=1cm of request, yshift=-9.43mm]  (prompt) {You are Navigator, an AI assistant for NHS Nottingham. Your purpose is to use tools to query a database and generate links to population health analyses.};
 \node[retrievetool, below=of prompt]                (search1)  {retrieve(`ddC')};
-\node[databox, below=of search1]                    (result1) {Zalcatabine | ConceptID 1100};
+\node[databox, below=of search1]                    (result1) {Zalcitabine | ConceptID 1100};
 \node[retrievetool, below=of result1]               (search2) {\texttt{retrieve}(`dm2')};
 \node[databox, below=of search2]                    (result2) {Diabetes II | ConceptID 477};
-\node[innerbox, below=of result2]                   (backend) {(Diabetes Mellitus 2 AND Zalcatabine) | CohortID: 77};
+\node[innerbox, below=of result2]                   (backend) {(Diabetes Mellitus 2 AND Zalcitabine) | CohortID: 77};
 
 
 % Retrieval Sub-agent 
@@ -43,9 +43,9 @@
 \node[umlstool, below=of retrieval0]   (retrieval2) {\texttt{lookup}(`ddC')};
 \node[databox, below=of retrieval2]    (retrieval3) {\textit{Dideoxycytidine}};
 \node[umlstool, below=of retrieval3]   (retrieval4) {\texttt{lookup}( \\ `Dideoxycytidine')};
-\node[databox, below=of retrieval4]    (retrieval5) {\textit{Zalcatabine}};
-\node[searchtool, below=of retrieval5] (retrieval6) {search(`Zalcatabine')};
-\node[databox, below=of retrieval6]    (retrieval7) {Zalcatabine | ConceptID 1100};
+\node[databox, below=of retrieval4]    (retrieval5) {\textit{Zalcitabine}};
+\node[searchtool, below=of retrieval5] (retrieval6) {search(`Zalcitabine')};
+\node[databox, below=of retrieval6]    (retrieval7) {Zalcitabine | ConceptID 1100};
 
 % Grouping boxes
 % Grouping boxes with circle labels
@@ -76,16 +76,16 @@
 \node[umlstool, below=of retrieval0]   (aretrieval2) {\texttt{lookup}(`ddC')};
 \node[databox, below=of retrieval2]    (aretrieval3) {\textit{Dideoxycytidine}};
 \node[umlstool, below=of retrieval3]   (aretrieval4) {\texttt{lookup}( \\ `Dideoxycytidine')};
-\node[databox, below=of retrieval4]    (aretrieval5) {\textit{Zalcatabine}};
-\node[searchtool, below=of retrieval5] (aretrieval6) {search(`Zalcatabine')};
-\node[databox, below=of retrieval6]    (aretrieval7) {Zalcatabine | ConceptID 1100};
+\node[databox, below=of retrieval4]    (aretrieval5) {\textit{Zalcitabine}};
+\node[searchtool, below=of retrieval5] (aretrieval6) {search(`Zalcitabine')};
+\node[databox, below=of retrieval6]    (aretrieval7) {Zalcitabine | ConceptID 1100};
 
 \node[innerbox, right=1cm of request, yshift=-9.43mm]  (aprompt) {You are Navigator, an AI assistant for NHS Nottingham. Your purpose is to use tools to query a database and generate links to population health analyses.};
 \node[retrievetool, below=of prompt]                (asearch1)  {retrieve(`ddC')};
-\node[databox, below=of search1]                    (aresult1) {Zalcatabine | ConceptID 1100};
+\node[databox, below=of search1]                    (aresult1) {Zalcitabine | ConceptID 1100};
 \node[retrievetool, below=of result1]               (asearch2) {\texttt{retrieve}(`dm2')};
 \node[databox, below=of search2]                    (aresult2) {Diabetes II | ConceptID 477};
-\node[innerbox, below=of result2]                   (abackend) {(Diabetes Mellitus 2 AND Zalcatabine) | CohortID: 77};
+\node[innerbox, below=of result2]                   (abackend) {(Diabetes Mellitus 2 AND Zalcitabine) | CohortID: 77};
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

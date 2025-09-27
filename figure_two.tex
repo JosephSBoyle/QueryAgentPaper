@@ -64,8 +64,8 @@
         align=center
     },
     agent-box/.style={
-        draw=purple!80!black,
-        fill=purple!20,
+        draw=purple!95!black,
+        fill=purple!17,
         thick,
         rounded corners,
         minimum height=3cm,
@@ -103,14 +103,17 @@
 \node[database, below left=of ehealth, xshift=-2cm, yshift=-2.7cm] (patient_data)   {Patient Data};
 \node[database, below right=of agent, yshift=-2cm]               (concept_db)       {Concepts};
 
-\node[icon-node, left=of patient_data, yshift=6cm, xshift=-3cm] (phc_icon)          {X};
-\node[align=center, left=0.2cm of phc_icon, text=red]          (phc_text) {Primary\\Healthcare\\Centre};
+% Primary Care - Circle with P (Green - least severe/first contact)
+\node[draw=green!70!black, fill=green!20, thick, circle, minimum size=2cm,
+      left=of patient_data, yshift=6cm, xshift=-3cm] (phc_icon) {Outpatient};
 
-\node[icon-node, below left=of phc_icon] (shc_icon) {X};
-\node[align=center, below=0.2cm of shc_icon, text=red] (shc_text) {Secondary\\Care};
+% Secondary Care - Circle with H (Orange - moderate severity)
+\node[draw=orange!70!black, fill=orange!20, thick, circle, minimum size=2cm,
+      below left=of phc_icon] (shc_icon) {Inpatient};
 
-\node[icon-node, below right=of shc_icon] (ssc_icon) {X};
-\node[align=center, below=0.2cm of ssc_icon, text=red] (ssc_text) {Specialist\\Care};
+% Tertiary Care - Circle with S (Red - highest severity/specialized)
+\node[draw=red!70!black, fill=red!20, thick, circle, minimum size=2cm,
+      below right=of shc_icon] (ssc_icon) {Specialist};
 
 \node[box-blue, right=of ehealth, yshift=0cm, xshift=5cm]   (llm) {LLM\\ Gemini; \\ ChatGPT; \\ Claude};
 \node[database, below=of llm]                               (umls) {UMLS};
