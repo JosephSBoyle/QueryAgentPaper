@@ -160,7 +160,7 @@ Our results show that, using natural language requests that require minimal clin
 \colorbox{yellow!17}{Query Agent} parses natural language questions into database queries in an agentic loop. % dynamically determining the course of action as it interacts with its data environment.
 The data environment comprises a local database of analyst-created medical \colorbox{red!17}{concepts}, and an open-access knowledge-base, \colorbox{blue!10}{UMLS}, which is used to help ground the agent faithfully map clinical jargon.
 % 	By looking up `ddC', the agent is able to link it to the brand-name Zalcitabine, . % a process which involves multi-step information retrieval.
-The main agent hands off the task of finding Concepts to a \colorbox{teal!10}{Retrieval sub-Agent} so that it can focus on creating the database query, improving it's success rate.
+The main agent hands off the task of finding Concepts to a \colorbox{teal!10}{Retrieval Agent} so that it can focus on creating the database query, improving it's success rate.
 }
 \label{fig:question-to-query}
 
@@ -404,11 +404,11 @@ Unlike ICL exemplars, workflows/templates do not reference specific entities, th
 \subsection{Tools}
 The agent has a fixed set of tools (functions) provided in the industry standard json tools format.
 Tools were designed to be simple, easy to compose, and powerful.
-Empirically we observed that agents performance was largely dependant on the quality of tool documentation.
+Empirically we observed that agents performance was largely contingent on the quality of tool documentation.
 
 \subsubsection*{\texttt{return(cohort: CohortID)}}
 The agent may return a result in the form of a URL link showing the user the result of the generated query, as well as the query itself.
-The output modes include \texttt{patient\_list(cohort)}, \texttt{statistics(cohort)}, \texttt{performance\_indicator(cohort, KPI, location, comparison\_location)}.
+The output modes include \texttt{patient\_list}, showing the user the cohort, and \texttt{patient\_statistics}, summarising the cohort.
 
 % \begin{table}[t]
 % \centering
@@ -530,45 +530,68 @@ Second, we create a benchmark using epidemiological cohort questions form \citet
 
 \subsection*{Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?}
 
-To test this we construct a serial benchmark of tasks that the agent is known to be capable of, and measure the relative performance degradation when the chat context contains unrelated task completions.
+To test this, we evaluate the performance of agents in an atomic (single-question) vs shared (multi-question) context, using questions from the EpiCoho
+dataset.
 
-\subsection*{Does providing an external KB enhance the agent's ability to generate queries?}
-
-To test this, we sample some of the rarer medical concepts available in the database and manually curate sets of synonyms and metonyms for those entities.
-We compare the model's ability to complete tasks requiring these concepts with and without access to the UMLS KB as a resource.
+% \subsection*{Does providing an external KB enhance the agent's ability to generate queries?}
+%To test this, we sample some of the rarer medical concepts available in the database and manually curate sets of synonyms and metonyms for those entities.
+% We compare the model's ability to complete tasks requiring these concepts with and without access to the UMLS KB as a resource.
 
 \section{Results}
 
-\subsection{Real World Queries}
-This section contains results demonstrating the ability of QueryAgent to answer population health questions in a real-world clinical database environment.
+\subsection{Epidemiological Cohort Queries}
 
-\begin{table}[ht]
+Table \ref{tab:epi-coho-results} shows the performance on the \textit{Epi Coho} questions created by \citet{ziletti_generating_2025}, evaluated against reference answers created by an analyst.
+% Semantic parsing is measure as the correct interpretation of the question, as measured by the Jaccard index of the given return arguments.
+Patient-level recall is the proportion of the patients in the reference answer cohort who were in the generated cohort; precision is the proportion of patients in the generated cohort who were in the reference cohort; patient F1-score is the harmonic mean of these two metrics.
+
+
+\begin{table*}[htb!]
 \centering
-\begin{tabular}{|l|r|r|r|}
-\hline
-	              & User & Agent & Tool \\
-\hline
-	dialogues	& 108 & 108    & -   \\
-	turns       & 178 & 178    & -   \\
-    	messages	& 178 & 837    & 403   \\
-	words 		& 2,221 & 16,892 & 315,429 \\
-	est. tokens	& 3,184 & 24,322 & 450,612\\
-\hline
-\end{tabular}
-\caption{
-Summary statistics for QueryAgent's conversations.
-`Tool' indicates the result of a tool-use, e.g. a database search.
-\textbf{Takeaway: the majority of words in the conversations were tool call results.}
+\resizebox{\textwidth}{!}{
+	\begin{tabular}{lcccr}
+		& \multicolumn{3}{c}{Patient Overlap} & Avg. tokens \\
+		\cmidrule(lr){2-4}
+		Single Questions & Recall & Precision & F1-score & used (\downarrow) \\ 
+		\hline
+		\textsc{QueryAgent} & \Recall & \Precision & \Fscore & \Tokensmean \\
+		
+		\textsc{+ RetrievalAgent} &  \textbf{\irRecall} & \irPrecision & \textbf{\irFscore} & \textbf{\irTokensmean} \\
+		
+		\textsc{+ RetrievalAgent} + UMLS & \irumlsRecall & \irumlsPrecision & \irumlsFscore & \irumlsTokensmean \\
+		\hline
+		\multicolumn{7}{l}{Chained Questions} \\
+		\hline
+		\textsc{QueryAgent} & \sRecall & \sPrecision & \sFscore & \sTokensmean \\
+		\textsc{+RetrievalAgent} & \textbf{\sirRecall} & \textbf{\sirPrecision} & \textbf{\sirFscore} & \sirTokensmean \\
+		\textsc{+RetrievalAgent} + UMLS  & \sirumlsRecall & \sirumlsPrecision & \sirumlsFscore & \textbf{\sirumlsTokensmean}
+		\\
+		\hline
+	\end{tabular}
 }
-\label{tab:conversation-statistics}
-\end{table}
+\caption{
+    QueryAgent's (QA) performance on 35 epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. We assess accuracy as a) whether or not the retrieved dataset exactly matches the expected dataset b) whether the type of query is correct, e.g. a count of patients versus a list of patients.
+	Performance is automatically evaluated using an analyst created answer as ground-truth and averaged at the query level.
+	The chained questions setup asks questions one after the other, within the same conversation.
+	% The addition of the IR sub-agent enables the system to maintain good performance over a greater number of questions, suffering only a small performance penalty in comparison to the QueryAgent only setup.
+}
 
-Figure \ref{tab:conversation-statistics} describes the conversations recorded in our real world user evaluation.
-The number of words generated by the LLM seems to dominate that of the user, despite our generative LLM having `thinking' turned on enabling it to generate tokens outside of the conversation.
-The number of words in the conversation from tool-calls dominates that of the user and agent combined by an OOM.
+\label{tab:epi-coho-results}
+\end{table*}
 
-The number of turns is the same for user and agent messages, since the agent will respond to each user message.
-The number of utterances is a count of discrete messages, e.g. interleaved text and tool-calls by the agent; for users this will be the same as the number of turns since a user cannot follow their own turn of speech.
+
+
+\subsection{Real World Queries}
+This section contains results demonstrating the ability of QueryAgent to answer population health questions in a real-world clinical environment.
+
+% TODO count number of chats with feedback...
+Table \ref{tab:user-feedback} shows that whilst users tend to rate the system positively, assigning a positive label at roughly 4x the rate of negative lables.
+Of generated queries, the results of 70\% were accessed by the user, suggesting good face-validity of the agent trajectories to clinical and analyst staff.
+
+%To overcome the low absolute feedback rate, we collect data on which queries were run by the user.
+% To ascertain the face-validity of a generated query, we check if the user accessed the result of that query.
+%This behaviour is a source of intrinsic labels: a user not executing a query suggests that they rejected the agent's implementation of their request/intent.
+
 
 \begin{table}[ht]
 \centering
@@ -592,113 +615,34 @@ The number of utterances is a count of discrete messages, e.g. interleaved text 
 \end{table}
 
 
-% TODO count number of chats with feedback...
-Table \ref{tab:user-feedback} shows that whilst the rate of feedback collection is low, when users rate the system they tend to rate it positively, assigning a positive label 78.8\% of the time.
 
-To overcome the low absolute feedback rate, we collect data on which queries were run by the user.
-% To ascertain the face-validity of a generated query, we check if the user accessed the result of that query.
-This behaviour is a source of intrinsic labels: a user not executing a query suggests that they rejected the agent's implementation of their request/intent.
-Of generated queries, the results of 70\% were accessed by the user, suggesting good face-validity of the agent trajectories to clinical and analyst staff.
+Table \ref{tab:conversation-statistics} summarises the statistics of the user conversations.
+% The number of words generated by the LLM seems to dominate that of the user, despite our generative LLM having `thinking' turned on enabling it to generate tokens outside of the conversation.
+% The number of words in the conversation from tool-calls dominates that of the user and agent combined by an OOM.
+The number of turns is the same for user and agent messages, since the agent will respond to each user message.
+The number of utterances is the number of discrete messages, counting interleaved text and tool-calls by the agent separtely.
+For users this will be the same as the number of turns since a user cannot send two consecutive messages.
 
-% \begin{table}[ht]
-% \centering
-% \begin{tabular}{|l|l|}
-% \hline
-% 	Agent performance & value \\
-% \hline
-
-% 	semantic parsing & -90\% 	\\
-% 	cohort selection & -90\%	\\
-% 	success rate	 & -85\%	\\
-% 	% Cohen's $\kappa$ & -0.7 	\\
-% \hline
-% \end{tabular}
-% \caption{
-% 	Expert grading of the agent's performance on a subset of 100 randomly selected real-world queries.
-% 	\textbf{Takeaway: analysts rated our agent as successfully parsing and operationalising user intents.}	
-% }
-% \label{tab:user-feedback}
-% \end{table}
-
-% \begin{table}[ht]
-% \centering
-% \begin{tabular}{|l|l|l|}
-% \hline
-% 	semantic parsing  & cohort acc. & success rate	\\	
-% \hline
-% 	-90\%		  & -90\%		& -80\%	\\
-% \hline	
-% \end{tabular}
-% \caption{
-% 	Expert grading of the agent's performance on a subset of 100 randomly selected real-world queries.
-% 	\textbf{Takeaway: analysts rated our agent as successfully parsing and operationalising user intents.}	
-% }
-% \label{tab:expert-feedback}
-% \end{table}
-
-% \begin{table}[h]
-% \centering
-% \begin{tabular}{|l|c|c|c|}
-% \hline
-% 				& \textbf{SR} & \textbf{Steps} & \textbf{Tokens} \\
-% \hline
-% QA 				& \SR\% & -5 & -1,500,000 \\
-% \hline
-% QA + sub-agent			& \SRRetrieval\% & -5 & -1,000,000 \\
-% \hline
-% QA + sub-agent w/ UMLS		& \SRRetrievalUMLS\% & -6 & -1,000,000 \\
-% \hline
-% \end{tabular}
-% 	\caption{Performance for QueryAgent (QA) with ablations for it's Retrieval sub-agent and the UMLS knowledge base on the development set.}
-% 	\label{tab:results-for-single-queries}
-% \end{table}
-
-
-\subsection{Cohort Queries}
-Table \ref{tab:epi-coho-results} shows the performance on the \textit{Epidemiological Cohort} dataset created by \citet{ziletti_generating_2025}, evaluated against reference answers created by an analyst.
-% Semantic parsing is measure as the correct interpretation of the question, as measured by the Jaccard index of the given return arguments.
-Patient-level recall is the proportion of the patients in the reference answer cohort who were in the generated cohort; precision is the proportion of patients in the generated cohort who were in the reference cohort; patient F1-score is the harmonic mean of these two measures.
-
-\begin{table*}[htb!]
+\begin{table}[ht]
 \centering
-\resizebox{\textwidth}{!}{
-	\begin{tabular}{lcccr}
-		& \multicolumn{3}{c}{Patient Overlap} & Mean tokens \\
-		\cmidrule(lr){2-4}
-		Single Questions & Recall & Precision & F1-score & consumed \\ 
-		\hline
-		\textsc{QueryAgent} & \Recall & \Precision & \Fscore & \Tokensmean \\
-		
-		\textsc{+ RetrievalAgent} &  \irRecall & \irPrecision & \irFscore & \irTokensmean \\
-		
-		\textsc{+ RetrievalAgent} + UMLS & \irumlsRecall & \irumlsPrecision & \irumlsFscore & \irumlsTokensmean \\
-		\hline
-		\multicolumn{7}{l}{Chained Questions} \\
-		\hline
-		\textsc{QueryAgent} & \sRecall & \sPrecision & \sFscore & \sTokensmean \\
-		\textsc{+RetrievalAgent} & \sirRecall & \sirPrecision & \sirFscore & \sirTokensmean \\
-		\textsc{+RetrievalAgent} + UMLS  & \sirumlsRecall & \sirumlsPrecision & \sirumlsFscore & \sirumlsTokensmean \\
-		\hline
-	\end{tabular}
-}
+\begin{tabular}{|l|r|r|r|}
+\hline
+\textsc{QueryAgent} & User & Agent & Tool \\
+\hline
+	dialogues	& 108 & 108    & -   \\
+	turns       & 178 & 178    & -   \\
+    	messages	& 178 & 837    & 403   \\
+	words 		& 2,221 & 16,892 & 315,429 \\
+% 	est. tokens	& 3,184 & 24,322 & 450,612\\
+\hline
+\end{tabular}
 \caption{
-    QueryAgent's (QA) performance on 35 epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. We assess accuracy as a) whether or not the retrieved dataset exactly matches the expected dataset b) whether the type of query is correct, e.g. a count of patients versus a list of patients.
-	Performance is automatically evaluated using an analyst created answer as ground-truth and averaged at the query level.
-	The chained questions setup asks questions one after the other, within the same conversation.
-	% The addition of the IR sub-agent enables the system to maintain good performance over a greater number of questions, suffering only a small performance penalty in comparison to the QueryAgent only setup.
+Summary statistics for QueryAgent's conversations.
+`Tool' indicates the result of a tool-use, e.g. a database search.
+\textbf{The majority of words in the conversations were tool call contents.}
 }
-
-\label{tab:epi-coho-results}
-\end{table*}
-
-
-\begin{figure*}[b]
-  \includegraphics[width=\linewidth]{content/pca_09_16_randomly_sampled_20.png}
-  \caption{
-    An interactive PCA visualisation of user messages.
-  }
-  \label{fig:sample-user-utterances}
-\end{figure*}
+\label{tab:conversation-statistics}
+\end{table}
 
 \section{Conclusion}
 % What did we take away from these results?
@@ -777,6 +721,16 @@ We thank the NHS Nottingham Data Management Team for their expertise and contrib
 \bibliography{references}
 
 \appendix
+
+
+\begin{figure*}[b]
+  \includegraphics[width=\linewidth]{content/pca_09_16_randomly_sampled_20.png}
+  \caption{
+    An interactive PCA visualisation of user messages.
+  }
+  \label{fig:sample-user-utterances}
+\end{figure*}
+
 
 % \section{Example Appendix}
 % \label{sec:appendix}
