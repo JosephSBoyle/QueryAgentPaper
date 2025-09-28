@@ -134,7 +134,10 @@ $^5$The Alan Turing Institute $^6$Nottingham and Nottinghamshire ICB, NHS
 \maketitle
 \begin{abstract}
 % What does this paper add
-In this paper we introduce \textsc{ClinQueryAgent}, a dialogue agent system for automating population health queries. We deploy the system via a chat window embedded within an existing population health management platform and run experiments to determine its utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 active patients. We evaluate the system's capacity to autonomously handle a range of health informatics tasks on the \textit{EpidemiologicalCohort} benchmark and through a real-world user evaluation. Our results show that, using natural language requests that require minimal clinical coding expertise, both analysts and clinicians are able to easily generate actionable information from patient health records.
+In this paper we introduce \textsc{ClinQueryAgent}, a dialogue agent for automating population clinical informatics queries.
+We deploy the system via a chat window embedded within an existing population health management platform and run experiments to determine its utility to a diverse userbase of 2,000 analysts and clinicians querying the data of 1,279,215 active patients.
+We evaluate the system's capacity to autonomously handle a range of health informatics tasks on the \textit{EpidemiologicalCohort} benchmark and through a real-world user evaluation.
+Our results show that, using natural language requests that require minimal clinical coding expertise, both analysts and clinicians are able to easily generate actionable information from patient health records.
 % can act as clinical copilots, aiding users in performing specialist tasks (database querying) in a way that maintains transparency.
 
 % We compare a range of frontier LLMs on a benchmark comprised of real-world user (question, query) pairs, and find (TBD). % todo
@@ -156,7 +159,7 @@ In this paper we introduce \textsc{ClinQueryAgent}, a dialogue agent system for 
 \caption{
 \colorbox{yellow!17}{Query Agent} parses natural language questions into database queries in an agentic loop. % dynamically determining the course of action as it interacts with its data environment.
 The data environment comprises a local database of analyst-created medical \colorbox{red!17}{concepts}, and an open-access knowledge-base, \colorbox{blue!10}{UMLS}, which is used to help ground the agent faithfully map clinical jargon.
-% 	By looking up `ddC', the agent is able to link it to the brand-name Zalcatabine, . % a process which involves multi-step information retrieval.
+% 	By looking up `ddC', the agent is able to link it to the brand-name Zalcitabine, . % a process which involves multi-step information retrieval.
 The main agent hands off the task of finding Concepts to a \colorbox{teal!10}{Retrieval sub-Agent} so that it can focus on creating the database query, improving it's success rate.
 }
 \label{fig:question-to-query}
@@ -223,8 +226,11 @@ Agentic IR (AIR) is a new paradigm in which language models iteratively interact
 The key of an agentic approach to IR over a traditional one is the ability to adapt their search as information is collected.
 %This makes the agentic approach more robust to various linguistic phenomena.
 
-A key decision in designing AIR systems is that of how agents should be able to search for information in their data environment, for instance how should a coding agent search a codebase? The best approaches have yet to be determined, and there are commercially successful systems employing a variety of different retrieval mechanisms.
-For instance, the current SOTA coding agent, Claude Code, uses only a lexical search function, akin to UNIX's `grep' tool to retrieve files, whilst Windsurf, a popular agentic coding IDE, uses a more complex system involving an index of file embeddings. We categorise these two approaches into \textbf{lexical} and \textbf{semantic} approaches to agentic-IR.
+A key design decision for Agentic AI is how they should perform information retrieval.
+The current SOTA coding agent, Claude Code, uses only a lexical search function akin to UNIX's \textitt{grep} to retrieve source files whilst Windsurf, a popular agentic coding IDE, uses a more complex system involving vector embeddings.
+We categorise these two approaches into \textbf{lexical} and \textbf{semantic} approaches to agentic-IR.
+In this work we opt for a lexical approach, removing the complexity of creating and maintaining vector indexes.
+
 
 \subsection{Medical Codes and Concepts}
 
@@ -249,7 +255,7 @@ For instance, to answer the question `who in my practice has diabetes II?', we m
 \end{table}
 
 
-Prior art for retrieving medical codes has tended to use non-agentic, retrieval pipelines based on semantic similarity \citet{baksi_medcoder_2024, ziletti_retrieval_2024}.
+Prior art for retrieving medical codes has tended to use retrieval pipelines based on semantic similarity \citet{baksi_medcoder_2024, ziletti_retrieval_2024}.
 These systems operate at the level of medical codes, such as ICD-10 codes and their descriptions, whereas our system operates at a level higher: using internally defined `concepts' representing logical compositions of codes, such as `Cirrhosis and no liver transplant'.
 These concepts are used to select cohorts of patients matching their criteria.
 
@@ -266,9 +272,8 @@ For example, the agent interprets \textit{`give me patients with CFS'} as a sear
 
 The degradation of LLM outout quality in long, multi-turn conversations has been noted in prior art \cite{laban_llms_2025}, and is colloquially referred to as `context rot' by practitioners.
 We experiment with a sub-agent for retrieving the correct concepts, a divide and conquer strategy in which the sub-agent retrieves entities and the main agent composes them into a query.
-This simple task decomposition reduces the context degradation which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back relevant entities, instead of the many hundred concepts returned by lexical search (`diabetes' returns 407 concepts, for instance).
+This simple task decomposition reduces the context degradation which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back a small number of relevant entities, acting as a filter for the large number of concepts returned by lexical search methods (`diabetes' returns 407 concepts, for instance).
 
-We demonstrate that this improves agent success rate (SR), particularly in complex multi-turn conversations in which the context contains a lot of information.
 % We hypothesise that this is due to the irrelevant entities `distracting' the model via the attention mechanism, a hypothesis we provide evidence for through the inspection of attention-weights. % Is attention weight given to incorrect entities at the expense of correct ones!? Find out.
 
 % We elect to use a lexical AIR approach, eschewing the complexity of creating and maintaining a semantic index of medical concepts.
@@ -405,38 +410,37 @@ Empirically we observed that agents performance was largely dependant on the qua
 The agent may return a result in the form of a URL link showing the user the result of the generated query, as well as the query itself.
 The output modes include \texttt{patient\_list(cohort)}, \texttt{statistics(cohort)}, \texttt{performance\_indicator(cohort, KPI, location, comparison\_location)}.
 
-\begin{table}[t]
-\centering
-\begin{tabular}{|p{2cm}|p{5cm}|}
-\hline
-	Question Category & Examples \\
-\hline
-\hline
-	Cohort List	& show me the \textcolor{blue}{dementia status} for people with moderate or severe frailty \\
-			& what are the comorbidities of people who take Zalcitabine \\ 
-\hline
-	Cohort Statistics 	& How many patients are on \textcolor{red}{PERT}? \\
-				& What's the rate of ADHD in people with Autism? \\
-				& Show me the distribution of \textcolor{teal}{ages} for \textcolor{orange}{dementia patients.} \\
-\hline
-	KPIs 	& How's \textcolor{brown}{Saxon Cross} doing on admissions avoidance? \\
-		& Is Nottingham West doing better than East on diabetes management? \\
-\hline
-\end{tabular}
-\caption{
-	Queries with named entities highlighted in various colours.
-	There a number of matching entities types and the agent must infer from the query both the appropriate entity and the appropriate entitiy type.
-	For instance for the phrase `\textcolor{blue}{dementia status}' is a request for a report (a specific columnar view of the patient list) but there also exist related
-	concepts (e.g. \textcolor{orange}{Dementia}) and KPIS which the model must determine are irrelevant to the query despite their lexical similarity.
-	\\ \textbf{Takeaway:} selecting entities to use the in the answer requires a contextual interpretation of the user intent.  
-}
-\label{tab:sample-queries}
-\end{table}
+% \begin{table}[t]
+% \centering
+% \begin{tabular}{|p{2cm}|p{5cm}|}
+% \hline
+% 	Question Category & Examples \\
+% \hline
+% \hline
+% 	Cohort List	& show me the \textcolor{blue}{dementia status} for people with moderate or severe frailty \\
+% 			& what are the comorbidities of people who take Zalcitabine \\ 
+% \hline
+% 	Cohort Statistics 	& How many patients are on \textcolor{red}{PERT}? \\
+% 				& What's the rate of ADHD in people with Autism? \\
+% 				& Show me the distribution of \textcolor{teal}{ages} for \textcolor{orange}{dementia patients.} \\
+% \hline
+% 	KPIs 	& How's \textcolor{brown}{Saxon Cross} doing on admissions avoidance? \\
+% 		& Is Nottingham West doing better than East on diabetes management? \\
+% \hline
+% \end{tabular}
+% \caption{
+% 	Queries with named entities highlighted in various colours.
+% 	There a number of matching entities types and the agent must infer from the query both the appropriate entity and the appropriate entity type.
+% 	For instance for the phrase `\textcolor{blue}{dementia status}' is a request for a report (a specific columnar view of the patient list) but there also exist related
+% 	concepts (e.g. \textcolor{orange}{Dementia}) and KPIS which the model must determine are irrelevant to the query despite their lexical similarity.
+% 	\\ \textbf{Takeaway:} selecting entities to use the in the answer requires a contextual interpretation of the user intent.  
+% }
+% \label{tab:sample-queries}
+% \end{table}
 
 \subsubsection*{\texttt{retrieve(term: str) -> list[Concept]}}
-This tool enables the agent to invoke it's retrieval sub-agent to find the relevant NHS concepts for the given term.
-For instance, \texttt{retrieve(`diabetes')} would return `Diabetes I, Diabetes II, Diabetes, incl. Suspected' and so on.
-Invoking this tool instantiates a new agent, which interacts with the UMLS and the concept database to determine which codes are most relevant to the given term.
+This tool enables the agent to invoke the IR sub-agent to find the relevant concepts for the given term.
+For instance, \texttt{retrieve(`diabetes')} would return `Diabetes I, Diabetes II, Suspected Diabetes' and so on.
 
 \subsubsection*{\texttt{search(key: str) -> list[Concept]}}
 To enable the sub-agent to access the relevant contents of various tables, we provide it with a search tool.
@@ -447,7 +451,6 @@ for.
 % todo
 Creating select queries for cohorts of patients is a key function of QA.
 An example of a question requiring the user to create a cohort is shown in Figure \ref{fig:question-to-query}.
-Much of the effort in optimising it's tools and abilities has been devoted to improving it's performance on this task.
 
 %\enquote{
 %Who is \textcolor{CornflowerBlue}{aged 75+} with \textcolor{Rhodamine}{moderate or severe frailty} in \textcolor{OliveGreen}{Nottingham West}, and who have either \textcolor{Maroon}{2+ emergency admissions in the last 12 months} or \textcolor{PineGreen}{polypharmacy of 5 or more medications?}
@@ -505,17 +508,6 @@ Much of the effort in optimising it's tools and abilities has been devoted to im
 %\end{table}
 
 
-\subsection{Data Protection} 
-Ethically there is a responsibility to treat patient data as confidental and to share it strictly on a `need to know' basis.
-Concepts pertaining to a certain record would be considered confidential information, even if the patient name and other identifiers were pseudonymised
-\footnote{Under UK law, the information pertaining to a person is considered confidential even if it is anonymised: \\
-\tiny
-\url{
-https://www.digitalregulations.innovation.nhs.uk/regulations-and-guidance-for-developers/all-developers-guidance/proof-of-concept-using-anonymous-or-artificial-health-data/}
-}. 
-To ensure that no confidential data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any tables derived from it; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions when they access the results URL, shown in Figure \ref{fig:question-to-query}.
-
-
 \section{Experimental Setup}
 Our framework is agnostic to the choice of LLM. We choose to evaluate using Gemini 2.5 Flash \citet{comanici_gemini_2025}, as Gemini 2.0 was identified as being the best-performing model in the closest prior art \citet{ziletti_generating_2025}.
 Due to the iterative nature of prompt-development, we believe that our system and tool prompts are biased towards this model in a way that would make comparison to other models misleading, and so we report metrics only for Gemini 2.5 Flash.
@@ -524,14 +516,16 @@ We run a real-world evaluation in a dialogue based deployment of QA, using 2.5 F
 
 \subsection*{Can we automatically map clinical questions to queries?}
 
-To test this key hypothesis we evaluate two measures of success.
+We evaluate two measures of success.
 First, we measure the ability of our system to generate a query determined to be `useful' by the clinician or analyst, using labels assigned during real-world use shown in Table \ref{tab:user-feedback}.
-Second, we get an experienced data analyst to grade 100 agent trajectories according to the rubric:
+Second, we create a benchmark using epidemiological cohort questions form \citet{ziletti_generating_2025}.
+
+% Second, we get an experienced data analyst to grade 100 agent trajectories according to the rubric:
 %Second, we construct a more controlled test in which we measure the agent's ability relative to two professional database analysts on a dataset of 100 questions sampled from our real-world dataset. We grade each agent according to the following two measures: 
-\begin{enumerate}
-	\item \textbf{parsing}: did the agent reasonably interpret the user query (to the extent possible)?
-	\item \textbf{accuracy}: was the cohort of patients selected appropriate? 
-\end{enumerate}
+% \begin{enumerate}
+%	\item \textbf{parsing}: did the agent reasonably interpret the user query (to the extent possible)?
+%	\item \textbf{accuracy}: was the cohort of patients selected appropriate? 
+%\end{enumerate}
 
 
 \subsection*{Can we maintain the agent's performance over long, multi-stage tasks, and between tasks?}
@@ -544,21 +538,19 @@ To test this, we sample some of the rarer medical concepts available in the data
 We compare the model's ability to complete tasks requiring these concepts with and without access to the UMLS KB as a resource.
 
 \section{Results}
-Our results are divided into two sections: one from our real-world user evaluation, and one from our evaluation using queries drawn from \citet{ziletti_generating_2025}.
-% (descriptive) What did our experiments show?
 
 \subsection{Real World Queries}
 This section contains results demonstrating the ability of QueryAgent to answer population health questions in a real-world clinical database environment.
 
 \begin{table}[ht]
 \centering
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{|l|r|r|r|}
 \hline
 	              & User & Agent & Tool \\
 \hline
 	dialogues	& 108 & 108    & -   \\
 	turns       & 178 & 178    & -   \\
-    messages	& 178 & 837    & 403   \\
+    	messages	& 178 & 837    & 403   \\
 	words 		& 2,221 & 16,892 & 315,429 \\
 	est. tokens	& 3,184 & 24,322 & 450,612\\
 \hline
@@ -667,29 +659,27 @@ Table \ref{tab:epi-coho-results} shows the performance on the \textit{Epidemiolo
 % Semantic parsing is measure as the correct interpretation of the question, as measured by the Jaccard index of the given return arguments.
 Patient-level recall is the proportion of the patients in the reference answer cohort who were in the generated cohort; precision is the proportion of patients in the generated cohort who were in the reference cohort; patient F1-score is the harmonic mean of these two measures.
 
-\begin{table*}[ht!]
+\begin{table*}[htb!]
 \centering
 \resizebox{\textwidth}{!}{
-\begin{tabular}{lcccr}
-\hline
-    & \multicolumn{3}{c}{Patient Overlap} & Mean tokens \\
-    \cmidrule(lr){2-4}
-Single Questions & Recall & Precision & F1-score & consumed \\ 
-\hline
-\textsc{QueryAgent} & \Recall & \Precision & \Fscore & \Tokensmean \\
-
-\textsc{+ RetrievalAgent} &  \irRecall & \irPrecision & \irFscore & \irTokensmean \\
-
-\textsc{+ RetrievalAgent} + UMLS & \irumlsRecall & \irumlsPrecision & \irumlsFscore & \irumlsTokensmean \\
-\hline
-\multicolumn{7}{l}{Chained Questions} \\
-\hline
-\textsc{QueryAgent} & \sRecall & \sPrecision & \sFscore & \sTokensmean \\
-\textsc{+RetrievalAgent} & \sirRecall & \sirPrecision & \sirFscore & \sirTokensmean \\
-\textsc{+RetrievalAgent} + UMLS  & \sirumlsRecall & \sirumlsPrecision & \sirumlsFscore & \sirumlsTokensmean \\
-
-\hline
-\end{tabular}
+	\begin{tabular}{lcccr}
+		& \multicolumn{3}{c}{Patient Overlap} & Mean tokens \\
+		\cmidrule(lr){2-4}
+		Single Questions & Recall & Precision & F1-score & consumed \\ 
+		\hline
+		\textsc{QueryAgent} & \Recall & \Precision & \Fscore & \Tokensmean \\
+		
+		\textsc{+ RetrievalAgent} &  \irRecall & \irPrecision & \irFscore & \irTokensmean \\
+		
+		\textsc{+ RetrievalAgent} + UMLS & \irumlsRecall & \irumlsPrecision & \irumlsFscore & \irumlsTokensmean \\
+		\hline
+		\multicolumn{7}{l}{Chained Questions} \\
+		\hline
+		\textsc{QueryAgent} & \sRecall & \sPrecision & \sFscore & \sTokensmean \\
+		\textsc{+RetrievalAgent} & \sirRecall & \sirPrecision & \sirFscore & \sirTokensmean \\
+		\textsc{+RetrievalAgent} + UMLS  & \sirumlsRecall & \sirumlsPrecision & \sirumlsFscore & \sirumlsTokensmean \\
+		\hline
+	\end{tabular}
 }
 \caption{
     QueryAgent's (QA) performance on 35 epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. We assess accuracy as a) whether or not the retrieved dataset exactly matches the expected dataset b) whether the type of query is correct, e.g. a count of patients versus a list of patients.
@@ -731,6 +721,16 @@ For instance, custom age-ranges cannot be created, rather the model must rely on
 We have carefully designed the system to avoid the possibility of patient data being accessed by the agent.
 This has been done by limiting it's capabilities to reading the definitions of concepts and creating queries.
 The generated queries select patient information, which only clinical staff with the appropriate permissions can view.
+
+Ethically there is a responsibility to treat patient data as confidental and to share it strictly on a `need to know' basis.
+Concepts pertaining to a certain record would be considered confidential information, even if the patient name and other identifiers were pseudonymised
+\footnote{Under UK law, the information pertaining to a person is considered confidential even if it is anonymised: \\
+\tiny
+\url{
+https://www.digitalregulations.innovation.nhs.uk/regulations-and-guidance-for-developers/all-developers-guidance/proof-of-concept-using-anonymous-or-artificial-health-data/}
+}. 
+To ensure that no confidential data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any tables derived from it; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions when they access the results URL, shown in Figure \ref{fig:question-to-query}.
+
 
 % Population health management is a serious task, and the use of AI warrants proper ethical consideration.
 % To address the ethical concerns regarding this work, let us consider the mechanisms by which such a system could cause harm.
