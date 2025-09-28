@@ -54,8 +54,8 @@
 %
 % and set <dim> to something 5cm or larger.
 
-\title{ClinQueryAgent: A Task-Oriented Dialogue System for Automated Clinical Informatics}
-
+%\title{ClinQueryAgent: A Task-Oriented Dialogue System for Automated Clinical Informatics}
+\title{ClinQueryAgent: A Conversational Agent for Clinical Informatics}
 
 % Author information can be set in various styles:
 % For several authors from the same institution:
@@ -154,9 +154,11 @@ In this paper we introduce \textsc{ClinQueryAgent}, a dialogue agent system for 
 \centering
 \includestandalone{figure\_one}
 \caption{
-QueryAgent parses natural language questions into database queries in an agentic loop, dynamically determining the course of action as it interacts with its data environment.
-The data environment comprises a local database of analyst-created medical concepts, and an open-access knowledge-base, UMLS, which is used to help ground the agent faithfully map clinical surface forms (e.g. `ddC') to local concepts, a process which involves multi-step information retrieval.
-QueryAgent hands off the \textit{retrieval} of concepts to a sub-agent so that it can focus on creating the database query.}
+\colorbox{yellow!17}{Query Agent} parses natural language questions into database queries in an agentic loop. % dynamically determining the course of action as it interacts with its data environment.
+The data environment comprises a local database of analyst-created medical \colorbox{red!17}{concepts}, and an open-access knowledge-base, \colorbox{blue!10}{UMLS}, which is used to help ground the agent faithfully map clinical jargon.
+% 	By looking up `ddC', the agent is able to link it to the brand-name Zalcatabine, . % a process which involves multi-step information retrieval.
+The main agent hands off the task of finding Concepts to a \colorbox{teal!10}{Retrieval sub-Agent} so that it can focus on creating the database query, improving it's success rate.
+}
 \label{fig:question-to-query}
 
 \end{figure}
@@ -264,7 +266,7 @@ For example, the agent interprets \textit{`give me patients with CFS'} as a sear
 
 The degradation of LLM outout quality in long, multi-turn conversations has been noted in prior art \cite{laban_llms_2025}, and is colloquially referred to as `context rot' by practitioners.
 We experiment with a sub-agent for retrieving the correct concepts, a divide and conquer strategy in which the sub-agent retrieves entities and the main agent composes them into a query.
-This simple task decomposition reduces the `context rot' which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back relevant entities, instead of the many hundred concepts returned by lexical search (`diabetes' returns 407 concepts, for instance).
+This simple task decomposition reduces the context degradation which occurs when the main-agent performs a large number of searches, as the retrieval sub-agent only passes back relevant entities, instead of the many hundred concepts returned by lexical search (`diabetes' returns 407 concepts, for instance).
 
 We demonstrate that this improves agent success rate (SR), particularly in complex multi-turn conversations in which the context contains a lot of information.
 % We hypothesise that this is due to the irrelevant entities `distracting' the model via the attention mechanism, a hypothesis we provide evidence for through the inspection of attention-weights. % Is attention weight given to incorrect entities at the expense of correct ones!? Find out.
@@ -275,12 +277,16 @@ We demonstrate that this improves agent success rate (SR), particularly in compl
 % This change allows agents to dynamically interact with the environment and to change course as they progress and receive new information, enabling them to excel at complex tasks like programming where purely generative models typically fail.
 % sole task is to retreive information, a paradigm described as `agentic information retrieval' by \citet{zhang_agentic_2025}.
 
-\subsection{Health Informatics}
+% \subsection{Health Informatics}
 % Informatics
-Health informatics is an interdisciplinary field at the intersection of data analytics and medicine, and entails improving the health outcomes through the broad use of clinical data. Informatics tasks include: writing database queries to select cohorts of patients meeting certain criteria, measuring the performance of interventions, and developing tools for clinicians to better access data. 
+% Health informatics is an interdisciplinary field at the intersection of data analytics and medicine, and entails improving the health outcomes through the broad use of clinical data.
+% In this paper, we tackle the informatics task of creating database
+% Informatics tasks include: writing database queries to select cohorts of patients meeting certain criteria, measuring the performance of interventions, and developing tools for clinicians to better access data. 
 
 % EHR
-The data used in healthcare informatics is stored in electronic healthcare records (EHR). Personal EHR are a rich store of information, often containing thousands of recorded medical codes dating back to a person's birth. These records are used to great effect in large health organisations such as the NHS, where this data enables clinicians to proactively identify people's needs and to provide targeted interventions, through the use of digital clinical decision support systems (CDSS).
+% The data used in healthcare informatics is stored in electronic healthcare records (EHR).
+% Personal EHR are a rich store of information, often containing thousands of recorded medical codes dating back to a person's birth.
+% These records are used to great effect in large health organisations such as the NHS, where this data enables clinicians to proactively identify people's needs and to provide targeted interventions, through the use of digital clinical decision support systems (CDSS).
 
 
 % Recent developments in data 
@@ -364,15 +370,15 @@ QueryAgent is an LLM based, end-to-end task-oriented dialogue system.
 In this section, we describe it's components and how they integrate.
 
 % \subsection{Automated testing} ...
-\subsection{Retrieval Sub-Agent}
+\subsection{Retrieval Sub-Agent: \textsc{IR Agent}}
 Identifying the appropriate medical concepts in a real-world clinical database is a challenging sub-task within QueryAgent's workflows.
 The task involves elements of semantic parsing and disambiguation, handling of polysemy, synonymy, metonymy, and abbreviations, as well as local knowledge on naming conventions.
 
 The retrieval sub-agent is prompted to identify the top-$k$ most relevant concepts for a given NL expression, using two tools, one for searching concepts, and one for returning concepts by their IDs.
 Returning concepts ends the sub-agents routine, and continues the main agent's trajectory with the newly-retrieved concepts.
 
-To aid the model interpret highly specialised and evolving clinical language, the sub-agent may be provided with a third tool: `search\_umls', which enables it to retrieve information from the Unified Medical Language System® (UMLS®).
-Information retrieved this way often includes mapping compound names/acronyms to drug names, e.g. `ddC' -> `dideoxycytidine' -> `Zalcitabine' (a drug used to treat HIV).
+To aid the model link clinical jargon to concepts,  the sub-agent may be provided with a `search\_umls' tool, which enables it to retrieve information from the Unified Medical Language System® (UMLS®).
+Information retrieved this way often includes mapping chemical compounds to drug names, e.g. `ddC' -> `dideoxycytidine' -> `Zalcitabine' (a drug used to treat HIV).
 This improves the agent's SR on tasks involving niche knowledge, as shown in Figure \ref{fig:question-to-query}.
 
 \subsection{Workflows}
@@ -392,8 +398,8 @@ Unlike ICL exemplars, workflows/templates do not reference specific entities, th
 
 \subsection{Tools}
 The agent has a fixed set of tools (functions) provided in the industry standard json tools format.
-The tools contain brief descriptions of their function (documentation), and are mapped 1:1 with Python functions internally, using a switch-case statement.
-Tools were designed to be simple, easy to compose, and powerful. Empirically we observed that agents performance was largely dependant on the quality of tool documentation.
+Tools were designed to be simple, easy to compose, and powerful.
+Empirically we observed that agents performance was largely dependant on the quality of tool documentation.
 
 \subsubsection*{\texttt{return(cohort: CohortID)}}
 The agent may return a result in the form of a URL link showing the user the result of the generated query, as well as the query itself.
@@ -502,8 +508,10 @@ Much of the effort in optimising it's tools and abilities has been devoted to im
 \subsection{Data Protection} 
 Ethically there is a responsibility to treat patient data as confidental and to share it strictly on a `need to know' basis.
 Concepts pertaining to a certain record would be considered confidential information, even if the patient name and other identifiers were pseudonymised
-\footnote{Under UK law, the information pertaining to a person is considered confidential even if it is anonymised.
-\url{https://www.digitalregulations.innovation.nhs.uk/regulations-and-guidance-for-developers/all-developers-guidance/proof-of-concept-using-anonymous-or-artificial-health-data/}
+\footnote{Under UK law, the information pertaining to a person is considered confidential even if it is anonymised: \\
+\tiny
+\url{
+https://www.digitalregulations.innovation.nhs.uk/regulations-and-guidance-for-developers/all-developers-guidance/proof-of-concept-using-anonymous-or-artificial-health-data/}
 }. 
 To ensure that no confidential data can be accessed by the agent, we create a selection of database tools which do not provide access to the `Patient' table, or any tables derived from it; the agent is limited to generating a \textit{query} for patient information, which is executed by the user according to their resective level of permissions when they access the results URL, shown in Figure \ref{fig:question-to-query}.
 
@@ -656,7 +664,7 @@ Of generated queries, the results of 70\% were accessed by the user, suggesting 
 
 \subsection{Cohort Queries}
 Table \ref{tab:epi-coho-results} shows the performance on the \textit{Epidemiological Cohort} dataset created by \citet{ziletti_generating_2025}, evaluated against reference answers created by an analyst.
-Semantic parsing is measure as the correct interpretation of the question, as measured by the Jaccard index of the given return arguments.
+% Semantic parsing is measure as the correct interpretation of the question, as measured by the Jaccard index of the given return arguments.
 Patient-level recall is the proportion of the patients in the reference answer cohort who were in the generated cohort; precision is the proportion of patients in the generated cohort who were in the reference cohort; patient F1-score is the harmonic mean of these two measures.
 
 \begin{table*}[ht!]
@@ -684,7 +692,10 @@ Single Questions & Recall & Precision & F1-score & consumed \\
 \end{tabular}
 }
 \caption{
-    QueryAgent's (QA) performance on 35 epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. We assess accuracy as a) whether or not the retrieved dataset exactly matches the expected dataset b) whether the type of query is correct, e.g. a count of patients versus a list of patients. Performance is automatically evaluated using an analyst created answer as ground-truth and averaged at the query level.
+    QueryAgent's (QA) performance on 35 epidemiological cohort questions, with and without the Information Retrieval (IR) sub-agent, and with/without access to UMLS. We assess accuracy as a) whether or not the retrieved dataset exactly matches the expected dataset b) whether the type of query is correct, e.g. a count of patients versus a list of patients.
+	Performance is automatically evaluated using an analyst created answer as ground-truth and averaged at the query level.
+	The chained questions setup asks questions one after the other, within the same conversation.
+	% The addition of the IR sub-agent enables the system to maintain good performance over a greater number of questions, suffering only a small performance penalty in comparison to the QueryAgent only setup.
 }
 
 \label{tab:epi-coho-results}
@@ -701,12 +712,14 @@ Single Questions & Recall & Precision & F1-score & consumed \\
 
 \section{Conclusion}
 % What did we take away from these results?
-In this study we described QueryAgent, a novel text-to-query system in which an agentic LLM determines how best to approach the problem itself rather than following a pre-determined pipeline.
-
-We found evidence that information retrieval in real-world databases with semantically overlapping medical concepts was a challenging sub-task for LLMs; and that assigning this IR sub-task to a distinct sub-agent provided a performance uplift in our conversational dialogues setup.
+In this study we described QueryAgent (QA), a novel text-to-query system for epidemiological cohort selection in which an agentic LM determines how best to approach the problem itself rather than following a pre-determined pipeline.
 
 We demonstrated that QA can faithfully and interpretably generate health informatics queries, overcoming a limitation of prior work which noted that queries generated in SQL remain a `black box' to users unfamiliar with the language  (\citet{ziletti_generating_2025}).
-Whilst in some cases this may be acceptable, the success of QA is evidence that generating intermediate representations similar to that proposed by \citet{guo_towards_2019} is a practical approach to generating queries for clinical users who are unlikely to be familiar with SQL.
+Whilst in some cases this may be acceptable, the success of QA is evidence that generating intermediate representations % similar to that proposed  \citet{guo_towards_2019}
+is a practical approach to generating queries for users who are unlikely to be familiar with SQL such as medical professionals.
+
+% We found that retrieving the correct medical concepts to be the core challenge for QA.
+We found empirically that invoking a sub-agent for the information retrieval component of the task improved performance and reduced the context burden in the main conversation, enabling QA to better maintain coherence in long conversations comprising over 30 distinct tasks.
 
 
 \section{Limitations}
