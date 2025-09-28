@@ -179,45 +179,43 @@ Whilst there has been a concerted effort from machine learning researchers to au
 
 % Formulation
 % \subsection{Task}
-This paper attempts to directly generate population health database queries from real-world user questions, enabling clinicians to use natural language to query electronic health record (EHR) data.
+This paper aims to directly generate population health database queries from real-world user questions, enabling clinicians to use natural language requests to query electronic health record (EHR) data.
 % Text-to-query systems rely on a range of NLU capabilities. Semantic parsing is required to interpret the user's intent, biomedical NER to determine the concepts being referenced, 
 % This involves a number of challenges: determining the user's intent (semantic parsing); disambiguating complex and often overloaded medical language; retrieving and selecting the appropriate medical concepts; and finally creating a query.
-We make the following three contributions:
+We make the following contributions:
 
 \begin{enumerate}
 
 \item We demonstrate that conversational agents can provide accurate natural language interfaces to clinical databases in an interpretable and privacy-preserving manner.
 
-\item We introduce a simple and powerful mechanism for reducing the performance penalty incurred during multi-turn conversations. % enabling agents to maintain coherence over long
+\item We observe that accuracy degrades and cost increases over the course of multi-turn conversations due to the long context arising from the database search results, and hence propose use of a second subordinate agent to handle database concept searches. % enabling agents to maintain coherence over long
 
-\item We demonstrate that providing access to an external KB aids in the interpretation and mapping of specialist queries involving niche medical concepts.
+\item We demonstrate that providing access to a clinical ontology including synonyms for each concept and relationships between concepts, namely the \emph{Unified Medical Language System (UMLS)}, improves performance for queries involving niche medical concepts.
 \end{enumerate}
 
 % Does providing an external knowledge base (KB) enhance the agent's ability to generate queries? Prior studies show that LLMs perform worse on rarer medical concepts. Does an external KB benefit queries for rare medical concepts more than common ones?
 
 \subsection{Task-Oriented Dialogue and LLM Agents}
 % todo: make more relevant to our work.
-Task-Oriented Dialogues (TOD) are ones in which an agent and user collaborate to act out a user's goal.
-A sub-task of TOD is semantic parsing, the process of creating logical interpretations of an instruction / utterance in the context of the dialogue thus far in order to determine what action to perform next.
+In Task-Oriented Dialogues (TODs), an agent and user collaborate to act out a user's goal.
+Core to successful TOD is semantic parsing (i.e. the process of creating a logical interpretation of an utterance), which must take into account the dialogue thus far (i.e. context) in order to determine what action the agent should perform next.
 
 Traditional TOD systems typically consist of a pipeline of distinct modules, each with a specific responsibility.
-A typical modular architecture might include a component for understanding the user's intent and extracting structured information from it (NLU); a component for tracking the state of the dialogue (DST); a policy module for determining the next action; and a final natural languge generation model for synthesising a response.  
+A modular architecture might include a natural language understanding (NLU) component for understanding the user's intent and extracting relevant structured information; a dialogue state tracking (DST) component for monitoring the evolving state of the extracted information (DST); a policy module for determining the next action based on the current state; and a natural language generation (NLG) model for synthesising a response. Performance in these systems is hampered by the propagation of errors between modules (\cite{yi_survey_2025}).
 
-As pointed out by \citet{yi_survey_2025}, the propagation of errors between modules hampers the performance of these systems, and they have largely fallen to the wayside in favour of systems which utilize a single sequence-to-sequence model to perform the entire task.
-Examples of the latter include \citet{wen_network-based_2017}, who developed an end-to-end trainable NN architecture and \citet{andreas_task-oriented_2020} were the first to treat TOD as a data flow graph in which the agent iteratively generates the program as the conversation progresses.
+More recent TOD systems use a single sequence-to-sequence model to perform the entire task. For instance, \citet{wen_network-based_2017} developed an end-to-end trainable neural network architecture. \citet{andreas_task-oriented_2020} were the first to treat TOD as a data flow graph in which the agent iteratively generates a program as the conversation progresses.
 
-\citet{hosseini-asl_simple_2022} created SimpleTOD, an end-to-end architecture utilising only a single pre-trained language model, GPT-2, to perform all aspects of task completion including database calls, with the results concatenated to the context.
-In sum, recent progress in TOD systems has been to move away from modular architectures and towards unified ones, epitomised by the SimpleTOD approach, which uses only a finetuned LLM. 
-
-
+The advent of powerful pre-trained large language models (LLMs) has enabled TOD systems in which the LLM acts as the agent without task-specific training. In 2022, \citet{hosseini-asl_simple_2022} created SimpleTOD, whereby GPT-2 performs all aspects of task completion including database calls, with the results concatenated to the context. Subsequent systems have continued to function via autoregressive language modelling, interleaving reasoning traces with task-specific actions, and interacting with external tools by issuing \emph{tool calls}, under the so-called `ReAct' paradigm \cite{yao_reac_2023}.
 % Two key challenges in TOD maintaining coherence over long multi-turn conversations (\citet{laban_llms_2025}), as well as identifying when f under-specified questions\cite{gan_clarq-llm_2024}
-In 2025, the most common form of agents, are coding ones like Claude Code (Anthropic), Gemini-CLI (Google) and Codex (OpenAI), which are capable of autonomously performing tasks which take human engineers multiple hours to complete \cite{kwa_measuring_2025}.
+Using this paradigm, modern LLMs like Claude Code (Anthropic), Gemini-CLI (Google) and Codex (OpenAI) are capable of autonomously performing tasks which take human engineers multiple hours to complete \cite{kwa_measuring_2025}. 
 %LLM agents (agents) refer to instruction-tuned models which are augmented with tools (functions) which enable them to take actions within an environment e.g. retrieving information from Wikipedia in order to obtain an answer \cite{yao_reac_2023}.
-Similar to SimpleTOD executing database commands based on autoregressive modelling of the user's belief state, state-of-the-art agents issue what's known as `tools-calls' through autoregressive language modelling. This is referred to as the `ReACT' paradigm after the eponymous paper from \citet{yao_reac_2023} which popularised the approach. To conclude, LLM agents are a new and powerful approach to goal-oriented dialogue systems, in which the agent can autonomously and iteratively interact with it's environment in order to accomplish the user's goals.
 
 
-\subsection{Agentic Information Retrieval (IR)}
-Agentic IR (AIR) is a new paradigm in which language models iteratively interact with the environment in the `ReAct' loop to retrieve information \citet{zhang_agentic_2025}.
+To conclude, LLM agents are a new and powerful approach to goal-oriented dialogue systems, in which the agent can autonomously and iteratively interact with its environment in order to accomplish the user's goals.
+
+
+\subsection{Agentic Information Retrieval}
+Agentic information retrieval (AIR) is a new paradigm in which language models iteratively interact with the environment in the `ReAct' loop to \emph{retrieve information} \citet{zhang_agentic_2025}.
 The key of an agentic approach to IR over a traditional one is the ability to adapt their search as information is collected.
 %This makes the agentic approach more robust to various linguistic phenomena.
 
